@@ -16,3 +16,8 @@ In many ways inspired by PyTorch
   - loss functions
 - dataset
   - default dataset interface
+
+# Deps
+- ty
+- pytest
+- ruff
