@@ -2,7 +2,7 @@ from value import Value
 from typing import Protocol
 
 
-class Function(Protocol):
+class Function:
     """
     Простой интерфейс который для любой функции, которая поддерживает прямой и обратный проход
     """
