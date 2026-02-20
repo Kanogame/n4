@@ -2,12 +2,15 @@ from value import Value
 from typing import Protocol
 
 
-class Function:
+class Function[T](Protocol):
     """
     Простой интерфейс который для любой функции, которая поддерживает прямой и обратный проход
     """
 
-    def forward_pass(*args: list[Value]) -> Value:
+    inputs: list[Value[T]]
+    outputs: list[Value[T]]
+
+    def forward_pass(*args: list[Value[T]]) -> Value[T]:
         """прямой проход функции"""
         pass
 
@@ -15,10 +18,14 @@ class Function:
         """обратный проход функции"""
         pass
 
-    @staticmethod
-    def arg_count(args: list[Value], desired_size: int) -> list[Value]:
-        """Проверяет количество переданных аргументов в функцию. Если кол-во не сответствует ожидаемому, значит функция вызвана неверно"""
+
+    def arg_count(self, args: list[Value[T]], desired_size: int):
+        """
+        Проверяет количество переданных аргументов в функцию. Если кол-во не сответствует ожидаемому, значит функция вызвана неверно.
+
+        Сразу записывает значения функции в inputs
+        """
         if len(args) != desired_size:
             raise TypeError
         
-        return args
+        self.inputs = args

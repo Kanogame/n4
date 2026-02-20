@@ -1,32 +1,24 @@
 from function import Function
 from value import Value
 
-class Add(Function):
-    adder_a: Value
-    adder_b: Value
-    result: Value
+class Add[T](Function[T]):
+    def forward_pass(self, *args: list[Value[T]]) -> Value[T]:
+        self.arg_count(args, 2)
 
-    def forward_pass(self, *args: list[Value]) -> Value:
-        a, b = self.arg_count(args, 2)
-
-        self.adder_a = a
-        self.adder_b = b
+        a, b = self.inputs
 
         c = Value(a + b, last_op=self)
 
-        self.result = c
+        self.outputs = [c]
 
         return c
 
     def backward_pass(self):
-        
-        a_new = self.adder_a.get_grad() + self.result.get_grad()
+        out = self.outputs[0]
+        a, b = self.inputs
 
-        self.adder_a.set_grad(a_new)
-
-        b_new = self.adder_b.get_grad() + self.result.get_grad()
-
-        self.adder_b.set_grad(b_new)
+        a.grad += out.grad
+        b.grad += out.grad
 
 
         ## https://github.com/karpathy/micrograd/blob/master/micrograd/engine.py

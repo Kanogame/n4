@@ -23,7 +23,7 @@ class Value[T]:
         def build(v: Value):
             if v not in visited:
                 visited.add(v)
-                for f in v.parents:
+                for f in v.parent_ops:
                     for i in f.inputs:
                         # TODO: remove recursion, remove inplace function
                         build(i)
