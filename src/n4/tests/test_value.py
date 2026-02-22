@@ -7,4 +7,3 @@ def test_value_initialization():
 
     assert x.data == 5
     assert x.grad == 0
-    assert x.parent_ops == []

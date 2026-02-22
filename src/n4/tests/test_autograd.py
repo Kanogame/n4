@@ -115,3 +115,30 @@ def test_deep_chain():
     assert d.grad == e.data
     assert e.grad == 13
 
+def test_used_twice():
+    """
+    Проверяет использовании значения дважды:
+    f = (x+y) + (x*y)
+    """
+
+    x = Value(5)
+    y = Value(4)
+    z = Value(8)
+
+    z1 = x + y
+    z2 = x * z
+    res = z1 + z2
+
+    res.backward()
+
+    # f = (5 + 4) * (5 * 8) = 9 * 40 = 360
+    # df / dres = 1
+    # df / dz1 = 1
+    # df / dz2 = 1
+    # df / dx = df / dz1 * dz1 / dx + df / dz2 * dz2 / dx = 1 + 8 = 9
+    # df / dy = df / dz1 * dz1 / dy = 1
+    # df / dz = df / dz2 = 5
+
+    assert x.grad == 9
+    assert y.grad == 1
+    assert z.grad == 5

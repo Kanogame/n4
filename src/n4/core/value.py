@@ -2,15 +2,23 @@ from typing import Self
 from .op import Op
 
 class Value[T]():
-    """Класс отражающий одно значение тензона, ожидает в качестве типа self некий класс, поддерживающий базовые операции"""
+    """
+    Класс отражающий одно значение тензона, ожидает в качестве типа self некий класс, поддерживающий базовые операции согластно numericProtocol
+    """
 
-    def __init__(self, data: T, last_op: Op=None):
+    def __init__(self, data: T, last_op: Op[T]=Op([])):
+        """
+        Инициализация класса, ожидает 
+        
+        data: numericProtocol, 
+        last_op: Последняя операция произведенная над значением, заполняется только при вызове из операций
+        """
+
         self.data = data
-        self.grad: int = 0
+        self.grad: T = 0
 
         self._backward = lambda: None
-        self.parent_ops: list[Op] = [last_op ] if last_op else []
-
+        self.parent_op: Op = last_op
 
     def backward(self: Self):
         topo: list[Value[T]]  = []
@@ -19,10 +27,8 @@ class Value[T]():
         def build(v: Value):
             if v not in visited:
                 visited.add(v)
-                for f in v.parent_ops:
-                    for i in f.inputs:
-                        # TODO: remove recursion, remove inplace function
-                        build(i)
+                for i in v.parent_op.inputs:
+                    build(i)
                 topo.append(v)
 
         build(self)
@@ -30,8 +36,7 @@ class Value[T]():
         self.grad = 1
 
         for v in reversed(topo):
-            for f in v.parent_ops:
-                f.backward_pass()
+            v.parent_op.backward_pass()
 
     
     def __add__(self: Self, other: Self) -> Self:
