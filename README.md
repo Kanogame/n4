@@ -27,15 +27,15 @@ In many ways inspired by PyTorch
 Soft deadline 02.28 -> Hard deadline 03.08
 
 - Implement Value
-  - data / grad / requires_grad
-  - operator overloading
-  - backward()
+  + data / grad / requires_grad
+  +/- operator overloading
+  + backward()
   - backward_step()
 
-- Implement internal OpNode
-  - forward dependencies
-  - saved values
-  - backward function
++ Implement internal OpNode
+  + forward dependencies
+  + saved values
+  + backward function
 
 - Implement execution tape
   - forward graph build
@@ -69,7 +69,7 @@ Soft deadline 02.28 -> Hard deadline 03.08
   - zero_grad()
 
 - Tests
-  - numeric gradient check
+  + numeric gradient check
   - scalar expression test
   - simple MLP convergence
 

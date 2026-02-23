@@ -88,6 +88,8 @@ class Value[T: NumericProtocol]():
         """
         from n4.op import Mul
         return Mul([self, other]).forward_pass()
+
+    # TODO: all ops from micrograd
     
     def __repr__(self) -> str:
         return f"n4.core.Value(data: {self.data}, grad: {self.grad}, backend: {self._backend}, parent_op: {self.parent_op})"
