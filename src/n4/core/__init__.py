@@ -3,5 +3,5 @@ from .op import Op
 
 __all__ = [
     "Value",
-    "Op"
+    "Op",
 ]

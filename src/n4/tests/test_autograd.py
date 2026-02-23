@@ -4,49 +4,51 @@ from n4.core import Value
 def test_simple_add_forward():
     """Проверяет корректность прямого прохода сложения"""
 
-    a = Value(2)
-    b = Value(3)
+    a = Value.from_int(2)
+    b = Value.from_int(3)
 
     c = a + b
 
-    assert c.data == 5
+    assert c.data.v == 5
 
 
 def test_simple_add_backward():
     """Проверяет корректность градиентов при сложении"""
 
-    a = Value(2)
-    b = Value(3)
+    a = Value.from_int(2)
+    b = Value.from_int(3)
 
     c = a + b
     c.backward()
 
-    assert a.grad == 1
-    assert b.grad == 1
+    assert c.grad.v == 1.0
+    assert c.parent_op is not None
+    assert a.grad.v == 1.0
+    assert b.grad.v == 1.0
 
 # Multiplication
 def test_simple_mul_forward():
     """Проверяет прямой проход умножения"""
 
-    a = Value(4)
-    b = Value(5)
+    a = Value.from_int(4)
+    b = Value.from_int(5)
 
     c = a * b
 
-    assert c.data == 20
+    assert c.data.v == 20
 
 
 def test_simple_mul_backward():
     """Проверяет корректность градиентов при умножении"""
 
-    a = Value(4)
-    b = Value(5)
+    a = Value.from_int(4)
+    b = Value.from_int(5)
 
     c = a * b
     c.backward()
 
-    assert a.grad == 5
-    assert b.grad == 4
+    assert a.grad.v == 5
+    assert b.grad.v == 4
 
 ## chain rule
 def test_chain_rule_basic():
@@ -55,9 +57,9 @@ def test_chain_rule_basic():
     f = (a + b) * c
     """
 
-    a = Value(2)
-    b = Value(3)
-    c = Value(4)
+    a = Value.from_int(2)
+    b = Value.from_int(3)
+    c = Value.from_int(4)
 
     f = (a + b) * c
     f.backward()
@@ -67,9 +69,9 @@ def test_chain_rule_basic():
     # df/db = c = 4
     # df/dc = a + b = 5
 
-    assert a.grad == 4
-    assert b.grad == 4
-    assert c.grad == 5
+    assert a.grad.v == 4
+    assert b.grad.v == 4
+    assert c.grad.v == 5
 
 
 def test_shared_node():
@@ -78,7 +80,7 @@ def test_shared_node():
     f = a * a
     """
 
-    a = Value(3)
+    a = Value.from_int(3)
     f = a * a
 
     f.backward()
@@ -86,7 +88,7 @@ def test_shared_node():
     # f = a^2
     # df/da = 2a = 6
 
-    assert a.grad == 6
+    assert a.grad.v == 6
 
 def test_deep_chain():
     """
@@ -94,11 +96,11 @@ def test_deep_chain():
     f = (((a + b) * c) + d) * e
     """
 
-    a = Value(1)
-    b = Value(2)
-    c = Value(3)
-    d = Value(4)
-    e = Value(5)
+    a = Value.from_int(1)
+    b = Value.from_int(2)
+    c = Value.from_int(3)
+    d = Value.from_int(4)
+    e = Value.from_int(5)
 
     f = (((a + b) * c) + d) * e
     f.backward()
@@ -109,11 +111,11 @@ def test_deep_chain():
     # f = h * e = 65
 
     # df/da = c * e = 3*5 = 15
-    assert a.grad == 15
-    assert b.grad == 15
-    assert c.grad == (a.data + b.data) * e.data
-    assert d.grad == e.data
-    assert e.grad == 13
+    assert a.grad.v == 15
+    assert b.grad.v == 15
+    assert c.grad.v == (a.data.v + b.data.v) * e.data.v
+    assert d.grad.v == e.data.v
+    assert e.grad.v == 13
 
 def test_used_twice():
     """
@@ -121,9 +123,9 @@ def test_used_twice():
     f = (x+y) + (x*y)
     """
 
-    x = Value(5)
-    y = Value(4)
-    z = Value(8)
+    x = Value.from_int(5)
+    y = Value.from_int(4)
+    z = Value.from_int(8)
 
     z1 = x + y
     z2 = x * z
@@ -139,6 +141,6 @@ def test_used_twice():
     # df / dy = df / dz1 * dz1 / dy = 1
     # df / dz = df / dz2 = 5
 
-    assert x.grad == 9
-    assert y.grad == 1
-    assert z.grad == 5
+    assert x.grad.v == 9
+    assert y.grad.v == 1
+    assert z.grad.v == 5
