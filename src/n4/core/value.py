@@ -30,6 +30,13 @@ class Value[T: NumericProtocol]():
         self.grad: T = self._backend.zero()
         self.parent_op = parent_op
 
+    def zero_grad(self: Self):
+        """
+        Метод позволят обнулить градиент
+        """
+
+        self.grad = self._backend.zero()
+
     @classmethod
     def from_int(cls, value: int) -> "Value[PyFloat]":
         """
@@ -115,6 +122,9 @@ class Value[T: NumericProtocol]():
 
         from n4.op import Relu
         return self._forward_pass(Relu, self)
+    
+    def applyActivation(self: Self, activation: Op[T]) -> "Value[T]":
+        return self._forward_pass(activation, self)
 
     # TODO: all ops from micrograd
     
