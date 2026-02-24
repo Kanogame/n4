@@ -12,6 +12,8 @@ from .nn_base import NnBase
 #
 # It is mostly a stylistic question, regradles of resuls, we need to control, either explcitly or implicitly
 # Therefore it is better be done explicitly.
+#
+# Also, T in current impl in inferred implicitly (if ever), need improvements
 class Neuron[T: NumericProtocol](NnBase):
 
     # Веса нейрона 
