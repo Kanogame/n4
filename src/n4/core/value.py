@@ -74,20 +74,47 @@ class Value[T: NumericProtocol]():
                 for i in v.parent_op.inputs:
                     if i not in visited:
                         stack.appendleft(i)
+
+    @staticmethod
+    def _forward_pass(op: Op[T], *args: "list[Value[T]]") -> "Value[T]":
+        return Op(args).forward_pass()
     
     def __add__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора суммирования с использованием класса Add
         """
         from n4.op import Add
-        return Add([self, other]).forward_pass()
+        return self._forward_pass(Add, self, other)
 
     def __mul__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора произведения с использованием класса Mul
         """
         from n4.op import Mul
-        return Mul([self, other]).forward_pass()
+        return self._forward_pass(Mul, self, other)
+
+    def __pow__(self: Self, other: "Value[T]") -> "Value[T]":
+        """
+        Перегрузка оператора возведения в степень с использованием класса Pow
+        """
+
+        from n4.op import Pow
+        return self._forward_pass(Pow, self, other)
+
+    def __div__(self: Self, other: "Value[T]") -> "Value[T]":
+        """
+        Перегрузка оператора деления с использованием класса Div
+        """
+        from n4.op import Div
+        return self._forward_pass(Div, self, other)
+        
+    def relu(self: Self) -> "Value[T]":
+        """
+        Классический Relu с использованием класса Relu
+        """
+
+        from n4.op import Relu
+        return self._forward_pass(Relu, self)
 
     # TODO: all ops from micrograd
     

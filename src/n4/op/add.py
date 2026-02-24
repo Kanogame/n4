@@ -4,9 +4,7 @@ from n4.core import Op, Value
 
 class Add[T: NumericProtocol](Op[T]):
     def forward_pass(self: Self) -> Value[T]:
-        self.arg_count(self.inputs, 2)
-
-        a, b = self.inputs
+        a, b = self.input_count(2)
 
         c = Value[T](a.data + b.data, parent_op=self)
 
@@ -16,8 +14,8 @@ class Add[T: NumericProtocol](Op[T]):
 
     def backward_pass(self: Self):
 
-        out = self.outputs[0]
-        a, b = self.inputs
+        out = self.output_count(1)
+        a, b = self.input_count(2)
 
         a.grad += out.grad
         b.grad += out.grad

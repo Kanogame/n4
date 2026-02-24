@@ -57,14 +57,33 @@ class Op[T: NumericProtocol](ABC):
         """обратный проход функции"""
         pass
 
+    @staticmethod
+    def _count_args(args: list[Value[T]], desired_size: int):
+        if len(args) != desired_size:
+            raise TypeError("Received incorrent number of arguments")
+        
+        return args[:desired_size]
 
-    def arg_count(self: Self, args: list[Value[T]], desired_size: int):
+    def input_count(self: Self, desired_size: int) -> list[Value[T]]:
         """
-        Проверяет количество переданных аргументов в функцию. Если кол-во не сответствует ожидаемому, значит функция вызвана неверно.
+        Проверяет количество переданных аргументов в функцию. 
+        
+        Если кол-во не сответствует ожидаемому, значит функция вызвана неверно. В таком случае будет выброшена ошибка 
 
         Сразу записывает значения функции в inputs
         """
-        if len(args) != desired_size:
-            raise TypeError
         
-        self.inputs = args
+        return self._count_args(self.inputs, desired_size)
+    
+
+
+    def output_count(self: Self, desired_size: int) -> list[Value[T]]:
+        """
+        Проверяет количество возрващенных значений функции.
+        
+        Если кол-во не сответствует ожидаемому, значит функция вызвана неверно. В таком случае будет выброшена ошибка
+
+        Сразу записывает значения функции в inputs
+        """
+        
+        return self._count_args(self.outputs, desired_size)
