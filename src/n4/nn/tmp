@@ -1,0 +1,267 @@
+from abc import ABC, abstractmethod
+from typing import Optional, List, Any
+
+from n4.core.numeric import NumericProtocol
+from n4.core import Value, Op
+from n4.op import NonOp
+from .nn_base import NnBase
+
+
+# ----------------------------------------------------------------------
+# Modified Neuron class
+# ----------------------------------------------------------------------
+class Neuron[T: NumericProtocol](NnBase):
+    """A single neuron with trainable weights and bias.
+
+    Args:
+        w_len: Number of input connections (must be >= 1).
+        activation: Activation function to apply after the linear combination.
+                   If None, a linear neuron (NonOp) is used.
+        backend: The numeric backend class (e.g., PyFloat) that provides
+                 static methods like random_uniform and zero.
+
+    Attributes:
+        w: List of weight Value[T] objects.
+        b: Bias Value[T].
+        activation: The activation operation class.
+        _backend: The numeric backend class.
+    """
+
+    w: list[Value[T]]
+    b: Value[T]
+    activation: type[Op[T]]
+    _backend: type[T]
+
+    def __init__(
+        self,
+        w_len: int,
+        activation: Optional[type[Op[T]]] = None,
+        backend: type[T] = None,
+    ) -> None:
+        if backend is None:
+            raise ValueError("A numeric backend must be provided.")
+        if w_len < 1:
+            raise ValueError("w_len must be >= 1")
+
+        self._backend = backend
+        self.w = [self._backend.random_uniform(-1, 1) for _ in range(w_len)]
+        self.b = self._backend.zero()
+        self.activation = NonOp if activation is None else activation
+
+    def __call__(self, x: List[Value[T]]) -> Value[T]:
+        """Compute the neuron output for a given input vector.
+
+        Args:
+            x: Input vector of length `w_len`.
+
+        Returns:
+            The activated output value.
+        """
+        act: Value[T] = self.b
+        for i in range(len(self.w)):
+            act += self.w[i] * x[i]
+        return act.apply_activation(self.activation)
+
+    def parameters(self) -> List[Value[T]]:
+        """Return all trainable parameters (weights + bias)."""
+        return self.w + [self.b]
+
+    def __repr__(self) -> str:
+        return f"{self.activation} Neuron({len(self.w)})"
+
+
+# ----------------------------------------------------------------------
+# Abstract Layer class
+# ----------------------------------------------------------------------
+
+
+
+# ----------------------------------------------------------------------
+# Dense (fully connected) layer
+# ----------------------------------------------------------------------
+class DenseLayer[T: NumericProtocol](Layer[T]):
+    """A fully connected layer composed of multiple neurons.
+
+    Args:
+        in_features: Number of input features.
+        out_features: Number of output features (neurons).
+        activation: Activation function for all neurons.
+        backend: Numeric backend class.
+    """
+
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        activation: Optional[type[Op[T]]] = None,
+        backend: type[T] = None,
+    ) -> None:
+        super().__init__(activation, backend)
+        self.in_features = in_features
+        self.out_features = out_features
+
+        # Create one neuron per output feature
+        for _ in range(out_features):
+            neuron = Neuron[T](
+                w_len=in_features,
+                activation=self.activation,
+                backend=self._backend,
+            )
+            self.neurons.append(neuron)
+
+    def forward(self, x: List[Value[T]]) -> List[Value[T]]:
+        """Apply the dense layer to an input vector.
+
+        Args:
+            x: Input vector of length `in_features`.
+
+        Returns:
+            Output vector of length `out_features`, each element being the
+            activated output of one neuron.
+        """
+        if len(x) != self.in_features:
+            raise ValueError(
+                f"Expected input of length {self.in_features}, got {len(x)}"
+            )
+        return [neuron(x) for neuron in self.neurons]
+
+
+# ----------------------------------------------------------------------
+# 2D Convolutional layer
+# ----------------------------------------------------------------------
+class ConvLayer[T: NumericProtocol](Layer[T]):
+    """A 2D convolutional layer where each filter is a Neuron.
+
+    Args:
+        in_channels: Number of input channels.
+        out_channels: Number of output channels (filters).
+        kernel_size: Side length of the square convolutional kernel.
+        stride: Stride of the convolution.
+        padding: Zero padding added to both sides of each spatial dimension.
+        activation: Activation function for all filters.
+        backend: Numeric backend class.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        activation: Optional[type[Op[T]]] = None,
+        backend: type[T] = None,
+    ) -> None:
+        super().__init__(activation, backend)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+        # Each filter (neuron) sees a flattened patch of size:
+        # in_channels * kernel_size * kernel_size
+        w_len = in_channels * kernel_size * kernel_size
+        for _ in range(out_channels):
+            neuron = Neuron[T](
+                w_len=w_len,
+                activation=self.activation,
+                backend=self._backend,
+            )
+            self.neurons.append(neuron)
+
+    def _pad_input(
+        self, x: List[List[List[Value[T]]]]
+    ) -> List[List[List[Value[T]]]]:
+        """Apply zero padding to the input tensor.
+
+        Args:
+            x: Input tensor of shape (in_channels, height, width).
+
+        Returns:
+            Padded tensor of shape (in_channels, height+2*padding, width+2*padding).
+        """
+        if self.padding == 0:
+            return x
+
+        channels = len(x)
+        height = len(x[0])
+        width = len(x[0][0])
+        new_h = height + 2 * self.padding
+        new_w = width + 2 * self.padding
+
+        padded = []
+        for c in range(channels):
+            channel_padded = []
+            for i in range(new_h):
+                row = []
+                for j in range(new_w):
+                    if (
+                        i < self.padding
+                        or i >= height + self.padding
+                        or j < self.padding
+                        or j >= width + self.padding
+                    ):
+                        # Padding area: insert zero
+                        row.append(self._backend.zero())
+                    else:
+                        # Copy from original
+                        row.append(x[c][i - self.padding][j - self.padding])
+                channel_padded.append(row)
+            padded.append(channel_padded)
+        return padded
+
+    def forward(
+        self, x: List[List[List[Value[T]]]]
+    ) -> List[List[List[Value[T]]]]:
+        """Apply the convolutional layer to an input tensor.
+
+        Args:
+            x: Input tensor of shape (in_channels, height, width).
+
+        Returns:
+            Output tensor of shape (out_channels, out_height, out_width),
+            where out_height and out_width are computed from the input size,
+            kernel_size, stride, and padding.
+        """
+        # Basic shape checks
+        if len(x) != self.in_channels:
+            raise ValueError(
+                f"Expected {self.in_channels} channels, got {len(x)}"
+            )
+        in_h = len(x[0])
+        in_w = len(x[0][0])
+
+        # Pad input
+        padded = self._pad_input(x)
+        pad_h = len(padded[0])
+        pad_w = len(padded[0][0])
+
+        # Compute output spatial dimensions
+        out_h = (pad_h - self.kernel_size) // self.stride + 1
+        out_w = (pad_w - self.kernel_size) // self.stride + 1
+        if out_h <= 0 or out_w <= 0:
+            raise ValueError(
+                "Output dimensions are non-positive; check kernel_size, stride, padding."
+            )
+
+        # Build output tensor
+        output = []
+        for neuron in self.neurons:
+            feature_map = []
+            # Slide over spatial positions
+            for i in range(0, pad_h - self.kernel_size + 1, self.stride):
+                row = []
+                for j in range(0, pad_w - self.kernel_size + 1, self.stride):
+                    # Extract flattened patch
+                    patch = []
+                    for c in range(self.in_channels):
+                        for ki in range(self.kernel_size):
+                            for kj in range(self.kernel_size):
+                                patch.append(padded[c][i + ki][j + kj])
+                    # Apply the filter (neuron) to this patch
+                    row.append(neuron(patch))
+                feature_map.append(row)
+            output.append(feature_map)
+
+        return output

@@ -25,9 +25,6 @@ class Neuron[T: NumericProtocol](NnBase):
     # Функция активации
     activation: type[Op[T]]
 
-    # Бекенд вычислений
-    _backend: type[T]
-
     def __init__(self: Self, w_len: int, activation: Optional[type[Op[T]]]=None):
         """
         Инициализация нейрона
@@ -39,12 +36,12 @@ class Neuron[T: NumericProtocol](NnBase):
             Устанавливается в любую скаляную функцию скалярного агрумента.
             Если требуется сделать линейрный нейрон, передается None или NonOp 
         """
+        super().__init__(self)
 
         self.w = [self._backend.random_unform(-1, 1) for _ in range(w_len)]
         self.b = self._backend.zero()
 
-        self.activation = NonOp if activation is None else activation
-        self._backend = type(T)
+        self.activation = self.resolve_activation(activation)
 
     def __call__(self, x):
         act: Value[T] = self.b
