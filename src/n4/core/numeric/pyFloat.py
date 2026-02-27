@@ -1,4 +1,5 @@
 from typing import Self
+from random import uniform
 
 class PyFloat:
     """
@@ -16,11 +17,21 @@ class PyFloat:
     def one(cls) -> Self:
         return cls(1.0)
 
+    @classmethod
+    def random_unform(cls, start, end) -> Self:
+        return cls(uniform(start, end))
+
+    def __lt__(self, other: "PyFloat") -> bool:
+        return self.v < other.v
+
     def __add__(self, other: "PyFloat") -> "PyFloat":
         return PyFloat(self.v + other.v)
 
     def __mul__(self, other: "PyFloat") -> "PyFloat":
         return PyFloat(self.v * other.v)
+
+    def __pow__(self, other: "PyFloat") -> "PyFloat":
+        return PyFloat(self.v ** other.v)
 
     def __repr__(self) -> str:
         return f"PyFloat({self.v})"

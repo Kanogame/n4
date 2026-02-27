@@ -23,12 +23,12 @@ class Neuron[T: NumericProtocol](NnBase):
     b: Value[T]
 
     # Функция активации
-    activation: Op[T]
+    activation: type[Op[T]]
 
     # Бекенд вычислений
     _backend: type[T]
 
-    def __init__(self: Self, w_len: int, activation: Optional[Op[T]]=None, _backend: type[T]=PyFloat):
+    def __init__(self: Self, w_len: int, activation: Optional[type[Op[T]]]=None):
         """
         Инициализация нейрона
 
@@ -40,15 +40,19 @@ class Neuron[T: NumericProtocol](NnBase):
             Если требуется сделать линейрный нейрон, передается None или NonOp 
         """
 
-        # Todo: uniform rand?
-        self.w = [self._backend.zero() for _ in w_len]
+        self.w = [self._backend.random_unform(-1, 1) for _ in range(w_len)]
         self.b = self._backend.zero()
 
-        self.activation = NonOp() if activation is None else activation
+        self.activation = NonOp if activation is None else activation
+        self._backend = type(T)
 
     def __call__(self, x):
-        act = sum((wi*xi for wi,xi in zip(self.w, x)), self.b)
-        return act(self.activation)
+        act: Value[T] = self.b
+    
+        for i in range(len(self.w)):
+            act += self.w[i] * x[i]
+
+        return act.applyActivation(self.activation)
     
     def parameters(self):
         return self.w + [self.b]

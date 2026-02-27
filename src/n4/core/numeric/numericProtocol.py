@@ -6,17 +6,30 @@ class NumericProtocol(Protocol):
     Интерфейс для числовых типов, используемых в Value.
     """
 
+    # Ноль
     @classmethod
     def zero(cls) -> Self: ...
-    
+
+    # Единица
     @classmethod
     def one(cls) -> Self: ...
 
-    # Todo: add > 0 for relu?
-    # Todo: add random gen? 
+    # Рандом подчиняющий равномерному распределению 
+    # TODO: start, end typing
+    @classmethod
+    def random_unform(cls, start, end) -> Self: ...
 
-    def __add__(self, other: Self) -> Self: ...
-    def __mul__(self, other: Self) -> Self: ...
-    def __div__(self, other: Self) -> Self: ...
-    def __pow__(self, other: Self) -> Self: ...
+    # Перегрузки операторов
+
+    # <
+    def __lt__(self: Self, other: Self) -> bool: ...
+
+    # +
+    def __add__(self: Self, other: Self) -> Self: ...
+    
+    # *
+    def __mul__(self: Self, other: Self) -> Self: ...
+    
+    # **
+    def __pow__(self: Self, other: Self) -> Self: ...
     

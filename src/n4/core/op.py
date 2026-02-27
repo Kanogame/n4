@@ -48,7 +48,7 @@ class Op[T: NumericProtocol](ABC):
                 )
 
     @abstractmethod
-    def forward_pass(self: Self) -> Value[T]:
+    def forward_pass(self: Self) -> list[Value[T]]:
         """прямой проход функции"""
         pass
 

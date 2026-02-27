@@ -1,6 +1,6 @@
 from n4.core.numeric import PyFloat, NumericProtocol
 from collections import deque
-from typing import Self, Optional, Type
+from typing import Self, Optional
 from .op import Op
 
 class Value[T: NumericProtocol]():
@@ -51,7 +51,7 @@ class Value[T: NumericProtocol]():
         """
         return Value(PyFloat(value))
 
-    def get_backend(self: Self) -> Type:
+    def get_backend(self: Self) -> type:
         return self._backend
 
     def backward(self: Self):
@@ -83,22 +83,22 @@ class Value[T: NumericProtocol]():
                         stack.appendleft(i)
 
     @staticmethod
-    def _forward_pass(op: Op[T], *args: "list[Value[T]]") -> "Value[T]":
-        return Op(args).forward_pass()
+    def _forward_pass_operation(op: type[Op[T]], *args: "Value[T]") -> "Value[T]":
+        return Op(list(args)).forward_pass()[0]
     
     def __add__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора суммирования с использованием класса Add
         """
         from n4.op import Add
-        return self._forward_pass(Add, self, other)
+        return self._forward_pass_operation(Add, self, other)
 
     def __mul__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора произведения с использованием класса Mul
         """
         from n4.op import Mul
-        return self._forward_pass(Mul, self, other)
+        return self._forward_pass_operation(Mul, self, other)
 
     def __pow__(self: Self, other: "Value[T]") -> "Value[T]":
         """
@@ -106,14 +106,7 @@ class Value[T: NumericProtocol]():
         """
 
         from n4.op import Pow
-        return self._forward_pass(Pow, self, other)
-
-    def __div__(self: Self, other: "Value[T]") -> "Value[T]":
-        """
-        Перегрузка оператора деления с использованием класса Div
-        """
-        from n4.op import Div
-        return self._forward_pass(Div, self, other)
+        return self._forward_pass_operation(Pow, self, other)
         
     def relu(self: Self) -> "Value[T]":
         """
@@ -121,10 +114,10 @@ class Value[T: NumericProtocol]():
         """
 
         from n4.op import Relu
-        return self._forward_pass(Relu, self)
+        return self._forward_pass_operation(Relu, self)
     
-    def applyActivation(self: Self, activation: Op[T]) -> "Value[T]":
-        return self._forward_pass(activation, self)
+    def applyActivation(self: Self, activation: type[Op[T]]) -> "Value[T]":
+        return self._forward_pass_operation(activation, self)
 
     # TODO: all ops from micrograd
     
