@@ -92,6 +92,13 @@ class Value[T: NumericProtocol]():
         """
         from n4.op import Add
         return self._forward_pass_operation(Add, self, other)
+    
+    def __sub__(self: Self, other: "Value[T]") -> "Value[T]":
+        """
+        Перегрузка оператора вычитания с использованием класса Sub
+        """
+        from n4.op import Sub
+        return self._forward_pass_operation(Sub, self, other)
 
     def __mul__(self: Self, other: "Value[T]") -> "Value[T]":
         """
@@ -100,6 +107,13 @@ class Value[T: NumericProtocol]():
         from n4.op import Mul
         return self._forward_pass_operation(Mul, self, other)
 
+    def __truediv__(self: Self, other: "Value[T]") -> "Value[T]":
+        """
+        Перегрузка оператора деления с использованием класса Div
+        """
+        from n4.op import Div
+        return self._forward_pass_operation(Div, self, other)
+
     def __pow__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора возведения в степень с использованием класса Pow
@@ -107,6 +121,13 @@ class Value[T: NumericProtocol]():
 
         from n4.op import Pow
         return self._forward_pass_operation(Pow, self, other)
+
+    def __neg__(self: Self) -> "Value[T]":
+        """
+        Перегрузка "-N" с использованием класса Neg
+        """
+        from n4.op import Neg
+        return self._forward_pass_operation(Neg, self)
         
     def relu(self: Self) -> "Value[T]":
         """
