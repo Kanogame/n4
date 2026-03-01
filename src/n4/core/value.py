@@ -84,7 +84,7 @@ class Value[T: NumericProtocol]():
 
     @staticmethod
     def _forward_pass_operation(op: type[Op[T]], *args: "Value[T]") -> "Value[T]":
-        return Op(list(args)).forward_pass()[0]
+        return op(list(args)).forward_pass()[0]
     
     def __add__(self: Self, other: "Value[T]") -> "Value[T]":
         """

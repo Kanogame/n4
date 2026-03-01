@@ -17,7 +17,7 @@ class NumericProtocol(Protocol):
     # Рандом подчиняющий равномерному распределению 
     # TODO: start, end typing
     @classmethod
-    def random_unform(cls, start, end) -> Self: ...
+    def random_uniform(cls, start, end) -> Self: ...
 
     # Перегрузки операторов
 
@@ -32,4 +32,7 @@ class NumericProtocol(Protocol):
     
     # **
     def __pow__(self: Self, other: Self) -> Self: ...
+
+    # -a
+    def __neg__(self) -> Self: ...
     

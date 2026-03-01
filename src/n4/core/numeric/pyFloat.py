@@ -18,7 +18,7 @@ class PyFloat:
         return cls(1.0)
 
     @classmethod
-    def random_unform(cls, start, end) -> Self:
+    def random_uniform(cls, start, end) -> Self:
         return cls(uniform(start, end))
 
     def __lt__(self, other: "PyFloat") -> bool:
@@ -32,6 +32,9 @@ class PyFloat:
 
     def __pow__(self, other: "PyFloat") -> "PyFloat":
         return PyFloat(self.v ** other.v)
+    
+    def __neg__(self) -> "PyFloat":
+        return PyFloat(-self.v)
 
     def __repr__(self) -> str:
         return f"PyFloat({self.v})"

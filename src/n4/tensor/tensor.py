@@ -1,115 +1,115 @@
+import operator
 from functools import reduce
-from typing import List, Tuple
+from typing import List, Tuple, Any, Union, Optional, Self
 from n4.core import Value
 from n4.core.numeric import NumericProtocol
 # TODO: sketch, full refactor required
 
 class Tensor[T: NumericProtocol]:
-    """Multi-dimensional array of Value[T] elements.
-
-    The tensor stores its data in a flat list and interprets it according to
-    its shape. All operations preserve the backend and never mix numeric types.
-
-    Args:
-        data: Flat list of Value[T] elements.
-        shape: Tuple of integers specifying the tensor dimensions.
-        backend: The numeric backend class used to create the values.
-
-    Raises:
-        ValueError: If the product of the shape does not equal the length of data.
+    """
+    Многомерный массим элементов Value, на бекенде T
     """
 
-    def __init__(self, data: List[Value[T]], shape: Tuple[int, ...], backend: type[T]):
-        expected = reduce(operator.mul, shape, 1)
+    _data: list[Value[T]]
+    _shape: Tuple[int, ...]
+    _backend: type[T]
+
+    def __init__(self, data: List[Value[T]], shape: Tuple[int, ...]):
+        """
+        Многомерный массим элементов Value, на бекенде T
+
+        Тензор представляет собой одномерный массив, который может представлять содержимое ввиде многомерного массива формы shape
+
+        Все операции намеренно запрещают смешивать бекенд
+
+        data: массив Value
+        shape: Кортеж чисел отражающий форму
+            должен по размеру соответствовать длинне data
+        """
+
+        expected: int = self.get_total_size(shape)
+
         if len(data) != expected:
             raise ValueError(
                 f"Data length {len(data)} does not match shape {shape} (expected {expected})"
             )
+
         self._data = data
         self._shape = shape
-        self._backend = backend
+        self._backend = data[0].get_backend()
 
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
     @property
     def shape(self) -> Tuple[int, ...]:
-        """Shape of the tensor."""
+        """Форма тензора."""
+
         return self._shape
 
     @property
     def ndim(self) -> int:
-        """Number of dimensions."""
+        """Размерность пространства тензора."""
+
         return len(self._shape)
 
     @property
     def size(self) -> int:
-        """Total number of elements."""
+        """Общее кол-во элементов, эквивалентно перемножению всех размерностей shape."""
+
         return len(self._data)
 
     @property
     def backend(self) -> type[T]:
-        """Numeric backend used by this tensor."""
+        """Бекенд хранения Value."""
+
         return self._backend
 
-    # ------------------------------------------------------------------
-    # Factory methods
-    # ------------------------------------------------------------------
-    @classmethod
-    def zeros(cls, shape: Tuple[int, ...], backend: type[T]) -> "Tensor[T]":
-        """Create a tensor filled with zeros."""
-        total = reduce(operator.mul, shape, 1)
-        data = [backend.zero() for _ in range(total)]
-        return cls(data, shape, backend)
+    @staticmethod
+    def get_total_size(shape: Tuple[int, ...]) -> int:
+        return reduce(operator.mul, shape, 1)
 
-    @classmethod
-    def ones(cls, shape: Tuple[int, ...], backend: type[T]) -> "Tensor[T]":
-        """Create a tensor filled with ones."""
-        total = reduce(operator.mul, shape, 1)
-        data = [backend.one() for _ in range(total)]
-        return cls(data, shape, backend)
+    @staticmethod
+    def zeros[N: NumericProtocol](shape: Tuple[int, ...], backend: type[N]) -> "Tensor[N]":
+        """Создать Тензор заплоненный нулями, размера shape"""
 
-    @classmethod
-    def random_uniform(
-        cls, shape: Tuple[int, ...], low: float = -1.0, high: float = 1.0, backend: type[T] = None
-    ) -> "Tensor[T]":
-        """Create a tensor filled with random values from a uniform distribution."""
-        if backend is None:
-            raise ValueError("A backend must be provided.")
-        total = reduce(operator.mul, shape, 1)
-        data = [backend.random_uniform(low, high) for _ in range(total)]
-        return cls(data, shape, backend)
+        total: int = Tensor.get_total_size(shape)
+        data: list[Value[N]] = [Value(backend.zero()) for _ in range(total)]
+        return Tensor(data, shape)
 
-    # ------------------------------------------------------------------
-    # Conversion
-    # ------------------------------------------------------------------
+    @staticmethod
+    def ones[N: NumericProtocol](shape: Tuple[int, ...], backend: type[N]) -> "Tensor[N]":
+        """Создать Тензор заплоненный единицами, размера shape"""
+
+        total: int = Tensor.get_total_size(shape)
+        data: list[Value[N]] = [Value(backend.one()) for _ in range(total)]
+        return Tensor(data, shape)
+
+    @staticmethod
+    def random_uniform[N: NumericProtocol](shape: Tuple[int, ...], backend: type[N], low: float = -1.0, high: float = 1.0) -> "Tensor[N]":
+        """Создать тензор заполненный по равномерному распределению"""
+
+        total: int = Tensor.get_total_size(shape)
+        data: list[Value[N]] = [Value(backend.random_uniform(low, high)) for _ in range(total)]
+        return Tensor(data, shape)
+
     def to_list(self) -> List[Any]:
-        """Convert the tensor to a nested Python list (for debugging)."""
+        """Конвертировать в список согластно shape"""
+
         if self.ndim == 0:
             return self._data[0]  # type: ignore
-        # Recursively build nested lists
+
         step = self.size // self._shape[0]
         return [
-            Tensor(self._data[i * step : (i + 1) * step], self._shape[1:], self._backend).to_list()
+            Tensor[T](self._data[i * step : (i + 1) * step], self._shape[1:]).to_list()
             for i in range(self._shape[0])
         ]
 
-    # ------------------------------------------------------------------
-    # Indexing (simplified, returns a copy)
-    # ------------------------------------------------------------------
     def __getitem__(self, idx: Union[int, Tuple[int, ...]]) -> Union[Value[T], "Tensor[T]"]:
-        """Index into the tensor.
-
-        Supports integer and tuple indexing. If the index specifies all dimensions,
-        a single Value[T] is returned. Otherwise, a new tensor (copy) with the
-        remaining dimensions is returned.
-
-        Args:
-            idx: An integer or a tuple of integers.
-
-        Returns:
-            A Value[T] or a Tensor[T] view.
         """
+        Индексация тензора
+
+        Подерживает индексацию по int или tuple. Если индекс указывает ВСЕ измерения, то вернет Value, 
+        иначе, будет возращена копия тензора (слайс)
+        """
+
         if isinstance(idx, int):
             idx = (idx,)
         if len(idx) > self.ndim:
@@ -130,29 +130,25 @@ class Tensor[T: NumericProtocol]:
 
         # Return a sub-tensor (copy)
         new_shape = self._shape[len(idx) :]
-        step = reduce(operator.mul, new_shape, 1)
+        step = self.get_total_size(new_shape)
         data_slice = self._data[flat : flat + step]
-        return Tensor(data_slice, new_shape, self._backend)
+        return Tensor(data_slice, new_shape)
 
-    # ------------------------------------------------------------------
-    # Reshape
-    # ------------------------------------------------------------------
+
     def reshape(self, new_shape: Tuple[int, ...]) -> "Tensor[T]":
-        """Return a new tensor with the same data but a new shape."""
-        expected = reduce(operator.mul, new_shape, 1)
+        """Создает новый тензор с указанной размерностью."""
+
+        expected = self.get_total_size(new_shape)
         if expected != self.size:
             raise ValueError(
                 f"Cannot reshape tensor of size {self.size} into shape {new_shape}"
             )
-        return Tensor(self._data, new_shape, self._backend)
+        return Tensor(self._data, new_shape)
 
-    # ------------------------------------------------------------------
-    # Broadcasting helpers
-    # ------------------------------------------------------------------
+    # TODO
     def _broadcast_shapes(self, other: "Tensor[T]") -> Tuple[Tuple[int, ...], Tuple[int, ...]]:
-        """Compute broadcasted shapes for two tensors (simplified, no alignment)."""
-        # Real implementation would align shapes from the right; we keep it simple.
-        # For our purposes (element-wise ops with same ndim) we assume they are already compatible.
+        """Подсчитать формы элементов для бродакастинга"""
+
         if self.ndim != other.ndim:
             raise NotImplementedError("Broadcasting with different numbers of dimensions")
         new_shape = []
@@ -161,10 +157,10 @@ class Tensor[T: NumericProtocol]:
                 new_shape.append(max(d1, d2))
             else:
                 raise ValueError(f"Incompatible shapes for broadcasting: {self._shape} and {other._shape}")
-        return tuple(new_shape), tuple(new_shape)  # both become same shape after broadcast
+        return tuple(new_shape), tuple(new_shape)
 
     def _broadcast_to(self, target_shape: Tuple[int, ...]) -> "Tensor[T]":
-        """Return a new tensor broadcasted to target_shape (simplified, assumes compatible)."""
+        """Вер"""
         if self._shape == target_shape:
             return self
         # In a real implementation we would expand dimensions and repeat data.
@@ -173,61 +169,56 @@ class Tensor[T: NumericProtocol]:
         # This is a placeholder – a full broadcasting implementation is complex.
         raise NotImplementedError("Full broadcasting not implemented in this example")
 
-    # ------------------------------------------------------------------
-    # Element-wise arithmetic
-    # ------------------------------------------------------------------
     def __add__(self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
-        """Element-wise addition with broadcasting."""
+
         if isinstance(other, Value):
             # Scalar addition: add the same value to every element
             new_data = [x + other for x in self._data]
-            return Tensor(new_data, self._shape, self._backend)
+            return Tensor(new_data, self._shape)
         # Tensor + Tensor
         # For simplicity, assume same shape (no broadcasting)
+
         if self._shape != other._shape:
             raise NotImplementedError("Broadcasting not implemented in this example")
         new_data = [x + y for x, y in zip(self._data, other._data)]
-        return Tensor(new_data, self._shape, self._backend)
+        return Tensor(new_data, self._shape)
 
     def __sub__(self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
+
         if isinstance(other, Value):
             new_data = [x - other for x in self._data]
-            return Tensor(new_data, self._shape, self._backend)
+            return Tensor(new_data, self._shape)
         if self._shape != other._shape:
             raise NotImplementedError("Broadcasting not implemented")
         new_data = [x - y for x, y in zip(self._data, other._data)]
-        return Tensor(new_data, self._shape, self._backend)
+        return Tensor(new_data, self._shape)
 
     def __mul__(self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
+
         if isinstance(other, Value):
             new_data = [x * other for x in self._data]
-            return Tensor(new_data, self._shape, self._backend)
+            return Tensor(new_data, self._shape)
         if self._shape != other._shape:
             raise NotImplementedError("Broadcasting not implemented")
         new_data = [x * y for x, y in zip(self._data, other._data)]
-        return Tensor(new_data, self._shape, self._backend)
+        return Tensor(new_data, self._shape)
 
     def __truediv__(self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
+
         if isinstance(other, Value):
             new_data = [x / other for x in self._data]
-            return Tensor(new_data, self._shape, self._backend)
+            return Tensor(new_data, self._shape)
         if self._shape != other._shape:
             raise NotImplementedError("Broadcasting not implemented")
         new_data = [x / y for x, y in zip(self._data, other._data)]
-        return Tensor(new_data, self._shape, self._backend)
+        return Tensor(new_data, self._shape)
 
     def __neg__(self) -> "Tensor[T]":
         new_data = [-x for x in self._data]
-        return Tensor(new_data, self._shape, self._backend)
+        return Tensor(new_data, self._shape)
 
-    # ------------------------------------------------------------------
-    # Matrix multiplication (2D only, no batching)
-    # ------------------------------------------------------------------
     def __matmul__(self, other: "Tensor[T]") -> "Tensor[T]":
-        """Matrix multiplication for 2D tensors.
 
-        Assumes self is shape (m, n) and other is shape (n, p). Returns (m, p).
-        """
         if self.ndim != 2 or other.ndim != 2:
             raise ValueError("__matmul__ currently only supports 2D tensors")
         m, n = self._shape
@@ -244,13 +235,11 @@ class Tensor[T: NumericProtocol]:
                 for k in range(n):
                     dot += self._data[i * n + k] * other._data[k * p + j]
                 result_data.append(dot)
-        return Tensor(result_data, (m, p), self._backend)
+        return Tensor(result_data, (m, p))
 
-    # ------------------------------------------------------------------
-    # Reductions
-    # ------------------------------------------------------------------
     def sum(self, dim: Optional[int] = None) -> Union[Value[T], "Tensor[T]"]:
-        """Sum over all elements or along a single dimension."""
+        """Сумма всех элементов по измерению."""
+
         if dim is None:
             # Reduce to scalar
             total = self._backend.zero()
@@ -272,7 +261,6 @@ class Tensor[T: NumericProtocol]:
         for i in range(dim + 1, self.ndim):
             stride *= self._shape[i]
 
-        block = stride
         outer = self.size // (self._shape[dim] * stride)
 
         new_data = []
@@ -284,10 +272,11 @@ class Tensor[T: NumericProtocol]:
                     s += self._data[base + k * stride]
                 new_data.append(s)
 
-        return Tensor(new_data, new_shape, self._backend)
+        return Tensor(new_data, new_shape)
 
     def mean(self, dim: Optional[int] = None) -> Union[Value[T], "Tensor[T]"]:
-        """Mean over all elements or along a single dimension."""
+        """Среднее всех элементов по измерению."""
+
         if dim is None:
             total = self.sum()
             return total / self._backend.from_float(float(self.size))
