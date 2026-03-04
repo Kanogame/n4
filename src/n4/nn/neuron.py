@@ -1,7 +1,7 @@
 from typing import Optional, Self
-from n4.core.numeric import NumericProtocol, PyFloat
+from n4.core.numeric import NumericProtocol
 from n4.core import Value, Op
-from n4.op import NonOp
+from n4.tensor import Tensor
 from .nn_base import NnBase
 
 # Todo: do we really need numberic protocol on high level?
@@ -14,10 +14,12 @@ from .nn_base import NnBase
 # Therefore it is better be done explicitly.
 #
 # Also, T in current impl in inferred implicitly (if ever), need improvements
+#
+# Convert above to docs
 class Neuron[T: NumericProtocol](NnBase):
 
     # Веса нейрона 
-    w: list[Value[T]]
+    w: Tensor[T]
 
     # Bias нейрона
     b: Value[T]
@@ -38,21 +40,19 @@ class Neuron[T: NumericProtocol](NnBase):
         """
         super().__init__(self)
 
-        self.w = [self._backend.random_unform(-1, 1) for _ in range(w_len)]
+        self.w = Tensor.random_uniform((w_len,), low=-1.0, high=1.0, backend=self._backend)
         self.b = self._backend.zero()
 
         self.activation = self.resolve_activation(activation)
 
     def __call__(self, x):
-        act: Value[T] = self.b
+        prod = self.w * x
+        dot = prod.sum()
+        pre_activation = dot + self.b
+        return pre_activation.apply_activation(self.activation)
     
-        for i in range(len(self.w)):
-            act += self.w[i] * x[i]
-
-        return act.applyActivation(self.activation)
-    
-    def parameters(self):
-        return self.w + [self.b]
+    def parameters(self) -> list[Value[T]]:
+        return self.w._data + [self.b]
     
     def __repr__(self):
-        return f"{self.activation} Neuron({len(self.w)})"
+        return f"{self.activation} Neuron({len(self.w._data)})"

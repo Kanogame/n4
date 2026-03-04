@@ -6,12 +6,12 @@
 # Create convolution layer with conv matrix
 # Create dense layer of neurons
 # In modal everything should be layer
+from n4.tensor import Tensor
 from n4.core import Op, Value
 from typing import Optional
 from abc import ABC, abstractmethod
 from .nn_base import NnBase
 from n4.core.numeric import NumericProtocol
-from .neuron import Neuron
 
 class Layer[T: NumericProtocol](NnBase, ABC):
     """
@@ -23,21 +23,15 @@ class Layer[T: NumericProtocol](NnBase, ABC):
     def __init__(self, activation: Optional[type[Op[T]]] = None):
         super().__init__(self)
 
-
-        self.activation = self.resolve_activation(activation)
-        self.neurons: list[Neuron[T]] = []
-
     @abstractmethod
-    def forward(self, x: list[Value[T]]) -> list[Value[T]]:
-        """Forward pass of the layer. To be implemented by subclasses."""
+    def forward(self, x: Tensor[T]) -> Tensor[T]:
+        """Прямой проход слоя, должен быть реализован подклассами"""
         pass
 
-    def __call__(self, x: Any) -> Any:
+    def __call__(self, x: Tensor[T]) -> Tensor[T]:
         return self.forward(x)
 
-    def parameters(self) -> List[Value[T]]:
-        """Collect all trainable parameters from the layer's neurons."""
-        params = []
-        for neuron in self.neurons:
-            params.extend(neuron.parameters())
-        return params
+    @abstractmethod
+    def parameters(self) -> list[Value[T]]:
+        """Все параметры слоя, должен быть реализован подклассами"""
+        pass

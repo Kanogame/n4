@@ -137,7 +137,7 @@ class Value[T: NumericProtocol]():
         from n4.op import Relu
         return self._forward_pass_operation(Relu, self)
     
-    def applyActivation(self: Self, activation: type[Op[T]]) -> "Value[T]":
+    def apply_activation(self: Self, activation: type[Op[T]]) -> "Value[T]":
         return self._forward_pass_operation(activation, self)
 
     # TODO: all ops from micrograd

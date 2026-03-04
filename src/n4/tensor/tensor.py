@@ -14,7 +14,7 @@ class Tensor[T: NumericProtocol]:
     _shape: Tuple[int, ...]
     _backend: type[T]
 
-    def __init__(self, data: List[Value[T]], shape: Tuple[int, ...]):
+    def __init__(self: Self, data: List[Value[T]], shape: Tuple[int, ...]):
         """
         Многомерный массим элементов Value, на бекенде T
 
