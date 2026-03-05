@@ -151,86 +151,76 @@ def test_matmul_shape_error():
 
     with pytest.raises(ValueError):
         a @ b
-#
-#
-#def test_sum_all():
-#    t = Tensor([Value.from_int(1), Value.from_int(2), Value.from_int(3)], (3,))
-#
-#    s : Value[PyFloat] = t.sum()
-#
-#    assert s.data.v == 6
-#
-#
-#def test_sum_dim():
-#    data = [Value(i) for i in range(6)]
-#    t = Tensor(data, (2, 3))
-#
-#    s = t.sum(dim=0)
-#
-#    assert s.shape == (3,)
-#    assert s._data[0].data == 3
-#    assert s._data[1].data == 5
-#    assert s._data[2].data == 7
-#
-#
-#def test_sum_invalid_dim():
-#    t = Tensor([Value(1)], (1,))
-#
-#    with pytest.raises(ValueError):
-#        t.sum(dim=3)
-#
-#
-## ============================================================
-## MEAN
-## ============================================================
-#
-#def test_mean_all():
-#    t = Tensor([Value(1), Value(3)], (2,))
-#
-#    m = t.mean()
-#
-#    assert abs(m.data - 2.0) < 1e-6
-#
-#
-#def test_mean_dim():
-#    data = [Value(1), Value(3), Value(5), Value(7)]
-#    t = Tensor(data, (2,2))
-#
-#    m = t.mean(dim=0)
-#
-#    assert m._data[0].data == 3
-#    assert m._data[1].data == 5
-#
-#
-## ============================================================
-## GRADIENT TESTS
-## ============================================================
-#
-#def test_grad_through_sum():
-#    t = Tensor([Value(1), Value(2)], (2,))
-#
-#    s = t.sum()
-#    s.backward()
-#
-#    for v in t._data:
-#        assert v.get_grad() == 1
-#
-#
-#def test_grad_through_matmul():
-#    a = Tensor([Value(1), Value(2),
-#                Value(3), Value(4)], (2, 2))
-#
-#    b = Tensor([Value(5), Value(6),
-#                Value(7), Value(8)], (2, 2))
-#
-#    c = a @ b
-#    s = c.sum()
-#
-#    s.backward()
-#
-#    # Проверяем, что градиенты ненулевые
-#    for v in a._data:
-#        assert v.get_grad() != 0
-#
-#    for v in b._data:
-#        assert v.get_grad() != 0
+
+
+def test_sum_all():
+    t = Tensor([Value.from_int(1), Value.from_int(2), Value.from_int(3)], (3,))
+
+    s : Value[PyFloat] = t.sum()
+
+    assert s.data.v == 6
+
+
+def test_sum_dim():
+    data = [Value.from_int(i) for i in range(6)]
+    t = Tensor(data, (2, 3))
+
+    s = t.sum_dim(dim=0)
+
+    assert s.shape == (3,)
+    assert s._data[0].data == 3
+    assert s._data[1].data == 5
+    assert s._data[2].data == 7
+
+
+def test_sum_invalid_dim():
+    t = Tensor([Value.from_int(1)], (1,))
+
+    with pytest.raises(ValueError):
+        t.sum_dim(dim=3)
+
+def test_mean_all():
+    t = Tensor([Value.from_int(1), Value.from_int(3)], (2,))
+
+    m = t.mean()
+
+    assert abs(m.data - 2.0) < 1e-6
+
+
+def test_mean_dim():
+    data = [Value.from_int(1),Value.from_int(3), Value.from_int(5), Value.from_int(7)]
+    t = Tensor(data, (2,2))
+
+    m = t.mean_dim(dim=0)
+
+    assert m._data[0].data == 3
+    assert m._data[1].data == 5
+
+def test_grad_through_sum():
+    t = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
+
+    s = t.sum()
+    s.backward()
+
+    for v in t._data:
+        assert v.grad.v == 1
+
+
+def test_grad_through_matmul():
+    a = Tensor([Value.from_int(1), Value.from_int(2),
+                Value.from_int(3), Value.from_int(4)], (2, 2))
+
+    b = Tensor([Value.from_int(5), Value.from_int(6),
+                Value.from_int(7), Value.from_int(8)], (2, 2))
+
+    c = a @ b
+    s = c.sum()
+
+    s.backward()
+
+    # Проверяем, что градиенты ненулевые
+    for v in a._data:
+        assert v.grad.v != 0
+
+    for v in b._data:
+        assert v.grad.v != 0

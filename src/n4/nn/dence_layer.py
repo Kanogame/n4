@@ -4,7 +4,7 @@ from n4.core import Op, Value
 from .layer import Layer
 from typing import Optional
 
-
+# TODO: requires refactoring
 class DenseLayer[T: NumericProtocol](Layer[T]):
     """
     Полносвязный слой

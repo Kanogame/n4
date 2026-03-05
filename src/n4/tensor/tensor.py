@@ -159,24 +159,17 @@ class Tensor[T: NumericProtocol]:
                 raise ValueError(f"Incompatible shapes for broadcasting: {self._shape} and {other._shape}")
         return tuple(new_shape), tuple(new_shape)
 
+    # めちゃくちゃTODO
     def _broadcast_to(self, target_shape: Tuple[int, ...]) -> "Tensor[T]":
-        """Вер"""
         if self._shape == target_shape:
             return self
-        # In a real implementation we would expand dimensions and repeat data.
-        # For now we only handle the case where the shapes are already compatible
-        # and the current shape can be expanded by repeating elements.
-        # This is a placeholder – a full broadcasting implementation is complex.
         raise NotImplementedError("Full broadcasting not implemented in this example")
 
     def __add__(self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
-
+        
         if isinstance(other, Value):
-            # Scalar addition: add the same value to every element
             new_data = [x + other for x in self._data]
             return Tensor(new_data, self._shape)
-        # Tensor + Tensor
-        # For simplicity, assume same shape (no broadcasting)
 
         if self._shape != other._shape:
             raise NotImplementedError("Broadcasting not implemented in this example")
@@ -237,26 +230,26 @@ class Tensor[T: NumericProtocol]:
                 result_data.append(dot)
         return Tensor(result_data, (m, p))
 
-    def sum(self, dim: Optional[int] = None) -> Union[Value[T], "Tensor[T]"]:
-        """Сумма всех элементов по измерению."""
+    def sum(self: Self) -> Value[T]:
+        """Сумма всех элементов тензора"""
 
-        if dim is None:
-            # Reduce to scalar
-            total = self._backend.zero()
-            for v in self._data:
-                total += v
-            return total
+        total = self._backend.zero()
+        for v in self._data:
+            total += v
+        return total
 
+    def sum_dim(self: Self, dim: int) -> "Tensor[T]":
+        """Сумма всех элементов по измерению"""
+        
         if dim < 0 or dim >= self.ndim:
             raise ValueError(f"Dimension {dim} out of range for shape {self._shape}")
 
-        # Sum along one dimension
-        # Compute new shape
+        # Сумма по измерению
         new_shape = list(self._shape)
         new_shape.pop(dim)
         new_shape = tuple(new_shape)
 
-        # Compute strides
+        # Шаг
         stride = 1
         for i in range(dim + 1, self.ndim):
             stride *= self._shape[i]
@@ -274,19 +267,16 @@ class Tensor[T: NumericProtocol]:
 
         return Tensor(new_data, new_shape)
 
-    def mean(self, dim: Optional[int] = None) -> Union[Value[T], "Tensor[T]"]:
-        """Среднее всех элементов по измерению."""
+    def mean(self: Self) -> Value[T]:
+        """Среднее всех элементов тензора"""
 
-        if dim is None:
-            total = self.sum()
-            return total / self._backend.from_float(float(self.size))
-        # Along a dimension
-        summed = self.sum(dim)
-        if isinstance(summed, Tensor):
-            # Divide each element by the size of the reduced dimension
-            factor = self._backend.from_float(float(self._shape[dim]))
-            return summed / factor
-        else:
-            # Should not happen because sum(dim) returns a Tensor
-            raise RuntimeError("Unexpected scalar from sum(dim)")
+        total = self.sum()
+        return total / self._backend.from_float(float(self.size))
+
+    def mean_dim(self: Self, dim: int) -> "Tensor[T]":
+        """Среднее всех элементов по измерению"""
+
+        summed = self.sum_dim(dim)
+        factor = self._backend.from_float(float(self._shape[dim]))
+        return summed / factor
 

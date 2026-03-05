@@ -45,13 +45,13 @@ class Neuron[T: NumericProtocol](NnBase):
 
         self.activation = self.resolve_activation(activation)
 
-    def __call__(self, x):
+    def __call__(self: Self, x: Tensor[T]):
         prod = self.w * x
-        dot = prod.sum()
+        dot: Value[T] = prod.sum()
         pre_activation = dot + self.b
         return pre_activation.apply_activation(self.activation)
     
-    def parameters(self) -> list[Value[T]]:
+    def parameters(self: Self) -> list[Value[T]]:
         return self.w._data + [self.b]
     
     def __repr__(self):

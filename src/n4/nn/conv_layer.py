@@ -4,7 +4,7 @@ from typing import Optional
 from n4.core.numeric import NumericProtocol
 from .layer import Layer
 
-# Vibed ATM
+# TODO: requres refactoring
 class ConvLayer[T: NumericProtocol](Layer[T]):
     """2D convolutional layer using tensor operations.
 

@@ -3,6 +3,7 @@ from n4.tensor import Tensor
 from n4.core.numeric import NumericProtocol
 from .layer import Layer
 
+# TODO: requires refactoring
 class SoftmaxLayer[T: NumericProtocol](Layer[T]):
     """Softmax layer applied along the last dimension."""
 

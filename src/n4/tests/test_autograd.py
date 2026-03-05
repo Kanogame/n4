@@ -1,4 +1,5 @@
 from n4.core import Value
+# uv pip install -e .
 
 # Addition
 def test_simple_add_forward():
