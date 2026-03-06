@@ -4,6 +4,7 @@ from n4.core import Op, Value
 from .layer import Layer
 from typing import Optional
 
+
 # TODO: requires refactoring
 class DenseLayer[T: NumericProtocol](Layer[T]):
     """
@@ -26,7 +27,7 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         self.in_features = in_features
         self.out_features = out_features
 
-        # Матрица весов 
+        # Матрица весов
         self.weights = Tensor.random_uniform(
             (out_features, in_features), backend=self._backend, low=-1.0, high=1.0
         )
@@ -34,7 +35,6 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         # Вектор весов
         self.bias = Tensor.zeros((out_features,), backend=self._backend)
         self.activation = self.resolve_activation(activation)
-
 
     def forward(self, x: Tensor[T]) -> Tensor[T]:
         """
@@ -46,7 +46,7 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         Выходные параметры:
             Тензор формы  (..., out_features). Все оставльные размерности остаются нетронутыми
         """
-        
+
         if x.shape[-1] != self.in_features:
             raise ValueError(
                 f"Expected last dimension to be {self.in_features}, got {x.shape[-1]}"
@@ -55,7 +55,9 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         # For simplicity, we only handle 2D input (batch, in_features) here.
         # A full implementation would support arbitrary leading dimensions.
         if x.ndim != 2:
-            raise NotImplementedError("DenseLayer currently only supports 2D input (batch, in_features)")
+            raise NotImplementedError(
+                "DenseLayer currently only supports 2D input (batch, in_features)"
+            )
 
         # x shape: (batch, in_features)
         # weights shape: (out_features, in_features)
@@ -65,15 +67,21 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         out_data: list[Value[T]] = []
         for i in range(batch_size):
             # Take row i of x (1D tensor of shape (in_features,))
-            row = Tensor[T]([x._data[i * self.in_features + j] for j in range(self.in_features)],
-                         (self.in_features,))
+            row = Tensor[T](
+                [x._data[i * self.in_features + j] for j in range(self.in_features)],
+                (self.in_features,),
+            )
             # Multiply by weights.T: row @ weights.T gives shape (out_features,)
             # We can compute each output element as dot(row, weights[:, k])
             out_row = []
             for k in range(self.out_features):
                 # weights[k, :] is a 1D tensor of shape (in_features,)
-                w_row = Tensor[T](self.weights._data[k * self.in_features : (k+1) * self.in_features],
-                               (self.in_features,))
+                w_row = Tensor[T](
+                    self.weights._data[
+                        k * self.in_features : (k + 1) * self.in_features
+                    ],
+                    (self.in_features,),
+                )
                 # Dot product
                 prod = row * w_row
                 dot = prod.sum()
@@ -81,7 +89,9 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
             out_data.extend(out_row)
 
             # For each element in out_data, apply activation
-        activated: list[Value[T]] = [v.apply_activation(self.activation) for v in out_data]
+        activated: list[Value[T]] = [
+            v.apply_activation(self.activation) for v in out_data
+        ]
 
         return Tensor[T](activated, (batch_size, self.out_features))
 

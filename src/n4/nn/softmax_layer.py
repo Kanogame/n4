@@ -3,6 +3,7 @@ from n4.tensor import Tensor
 from n4.core.numeric import NumericProtocol
 from .layer import Layer
 
+
 # TODO: requires refactoring
 class SoftmaxLayer[T: NumericProtocol](Layer[T]):
     """Softmax layer applied along the last dimension."""
@@ -29,9 +30,11 @@ class SoftmaxLayer[T: NumericProtocol](Layer[T]):
         result_data = []
         for i in range(num_rows):
             # Extract row i (1D tensor of length last_dim)
-            row_data = x_2d._data[i * last_dim : (i+1) * last_dim]
+            row_data = x_2d._data[i * last_dim : (i + 1) * last_dim]
             # Numerical stability: subtract max
-            max_val = max(v.data for v in row_data)  # Access underlying data for comparison
+            max_val = max(
+                v.data for v in row_data
+            )  # Access underlying data for comparison
             # Compute exponentials
             exps = [(v - self._backend.from_float(max_val)).exp() for v in row_data]
             sum_exp = self._backend.zero()

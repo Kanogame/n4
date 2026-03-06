@@ -1,5 +1,6 @@
 from n4.core import Value
 
+
 def test_value_initialization():
     """Проверяет корректную инициализацию Value"""
 

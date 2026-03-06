@@ -1,6 +1,6 @@
 # Todo:
 # Abstrac layer with support of convolution
-# What to do: 
+# What to do:
 # Some typed (Numeric) layer with inps and outputs
 # Then, neuron layer, with connetion matrix
 # Create convolution layer with conv matrix
@@ -12,6 +12,7 @@ from typing import Optional
 from abc import ABC, abstractmethod
 from .nn_base import NnBase
 from n4.core.numeric import NumericProtocol
+
 
 class Layer[T: NumericProtocol](NnBase, ABC):
     """

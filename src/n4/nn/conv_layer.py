@@ -4,6 +4,7 @@ from typing import Optional
 from n4.core.numeric import NumericProtocol
 from .layer import Layer
 
+
 # TODO: requres refactoring
 class ConvLayer[T: NumericProtocol](Layer[T]):
     """2D convolutional layer using tensor operations.
@@ -28,7 +29,7 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
         activation: Optional[type[Op[T]]] = None,
     ) -> None:
         super().__init__(self)
-        
+
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -37,7 +38,9 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
 
         # Each filter is a flattened kernel: in_channels * kernel_size * kernel_size
         filter_len = in_channels * kernel_size * kernel_size
-        self.weights = Tensor.random_uniform((out_channels, filter_len), backend=self._backend, low=-1.0, high=1.0        )
+        self.weights = Tensor.random_uniform(
+            (out_channels, filter_len), backend=self._backend, low=-1.0, high=1.0
+        )
         self.bias = Tensor.zeros((out_channels,), backend=self._backend)
 
         self.activation = self.resolve_activation(activation)
@@ -81,7 +84,7 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
                     for ki in range(k):
                         for kj in range(k):
                             patch.append(x[ci, i + ki, j + kj])
-                patches.extend(patch)   # flat list of all patches concatenated
+                patches.extend(patch)  # flat list of all patches concatenated
         # Reshape to (num_patches, filter_len)
         return Tensor[T](patches, (num_patches, filter_len))
 
@@ -109,13 +112,16 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
         out_data = []
         for p in range(num_patches):
             # Take patch p (1D tensor of length filter_len)
-            patch = Tensor[T](cols._data[p * filter_len : (p+1) * filter_len],
-                           (filter_len,))
+            patch = Tensor[T](
+                cols._data[p * filter_len : (p + 1) * filter_len], (filter_len,)
+            )
             out_row = []
             for oc in range(out_channels):
                 # weights[oc, :] is a 1D tensor of length filter_len
-                w_row = Tensor[T](self.weights._data[oc * filter_len : (oc+1) * filter_len],
-                               (filter_len,))
+                w_row = Tensor[T](
+                    self.weights._data[oc * filter_len : (oc + 1) * filter_len],
+                    (filter_len,),
+                )
                 # Dot product
                 prod = patch * w_row
                 dot = prod.sum()

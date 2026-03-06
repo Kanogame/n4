@@ -4,6 +4,7 @@ from typing import Self, Optional
 from n4.core import Value, Op
 from n4.core.numeric import NumericProtocol
 
+
 class NnBase[T: NumericProtocol](ABC):
     """
     Базовый класс для всех элементов нейросети.
@@ -21,7 +22,7 @@ class NnBase[T: NumericProtocol](ABC):
     def zero_grad(self: Self):
         for v in self.parameters():
             v.zero_grad()
-        
+
     @abstractmethod
     def parameters(self: Self) -> list[Value[T]]: ...
 

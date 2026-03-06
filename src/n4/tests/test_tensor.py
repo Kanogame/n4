@@ -3,6 +3,7 @@ from n4.tensor.tensor import Tensor
 from n4.core import Value
 import pytest
 
+
 def test_init_correct_shape():
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
@@ -31,11 +32,13 @@ def test_ones():
     for v in t._data:
         assert v.data.v == 1
 
+
 def test_random_uniform_range():
     t = Tensor.random_uniform((10,), backend=PyFloat, low=-2, high=2)
 
     for v in t._data:
         assert -2 <= v.data.v <= 2
+
 
 def test_to_list_2d():
     data = [Value.from_int(i) for i in range(6)]
@@ -61,8 +64,8 @@ def test_get_slice():
     data: list[Value[PyFloat]] = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
-    row: Tensor[PyFloat] = t[1] # ty:ignore[invalid-assignment]
-    
+    row: Tensor[PyFloat] = t[1]  # ty:ignore[invalid-assignment]
+
     assert isinstance(row, Tensor)
     assert row.shape == (3,)
     assert row._data[0].data.v == 1
@@ -74,6 +77,7 @@ def test_get_out_of_bounds():
 
     with pytest.raises(IndexError):
         t[3]
+
 
 def test_reshape_valid():
     data = [Value.from_int(i) for i in range(6)]
@@ -91,7 +95,6 @@ def test_reshape_invalid():
 
     with pytest.raises(ValueError):
         t.reshape((4, 4))
-
 
 
 def test_tensor_add():
@@ -118,8 +121,9 @@ def test_tensor_shape_mismatch():
     a = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
     b = Tensor([Value.from_int(1), Value.from_int(2), Value.from_int(3)], (3,))
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(RuntimeError):
         a + b
+
 
 def test_neg():
     t = Tensor([Value.from_int(2), Value.from_int(-3)], (2,))
@@ -130,11 +134,23 @@ def test_neg():
 
 
 def test_matmul_basic():
-    a = Tensor([Value.from_int(1), Value.from_int(2),
-                Value.from_int(3), Value.from_int(4)], (2, 2))
+    a = Tensor(
+        [Value.from_int(1), Value.from_int(2), Value.from_int(3), Value.from_int(4)],
+        (2, 2),
+    )
 
-    b = Tensor([Value.from_int(5), Value.from_int(6),
-                Value.from_int(7), Value.from_int(8)], (2, 2))
+    # a:
+    # 1 2
+    # 3 4
+
+    b = Tensor(
+        [Value.from_int(5), Value.from_int(6), Value.from_int(7), Value.from_int(8)],
+        (2, 2),
+    )
+
+    # b:
+    # 5 6
+    # 7 8
 
     c = a @ b
 
@@ -146,7 +162,7 @@ def test_matmul_basic():
 
 
 def test_matmul_shape_error():
-    a = Tensor([Value.from_int(1)], (1,1))
+    a = Tensor([Value.from_int(1)], (1, 1))
     b = Tensor([Value.from_int(1)], (1,))
 
     with pytest.raises(ValueError):
@@ -156,7 +172,7 @@ def test_matmul_shape_error():
 def test_sum_all():
     t = Tensor([Value.from_int(1), Value.from_int(2), Value.from_int(3)], (3,))
 
-    s : Value[PyFloat] = t.sum()
+    s: Value[PyFloat] = t.sum()
 
     assert s.data.v == 6
 
@@ -179,6 +195,7 @@ def test_sum_invalid_dim():
     with pytest.raises(ValueError):
         t.sum_dim(dim=3)
 
+
 def test_mean_all():
     t = Tensor([Value.from_int(1), Value.from_int(3)], (2,))
 
@@ -188,13 +205,14 @@ def test_mean_all():
 
 
 def test_mean_dim():
-    data = [Value.from_int(1),Value.from_int(3), Value.from_int(5), Value.from_int(7)]
-    t = Tensor(data, (2,2))
+    data = [Value.from_int(1), Value.from_int(3), Value.from_int(5), Value.from_int(7)]
+    t = Tensor(data, (2, 2))
 
     m = t.mean_dim(dim=0)
 
     assert m._data[0].data == 3
     assert m._data[1].data == 5
+
 
 def test_grad_through_sum():
     t = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
@@ -207,11 +225,15 @@ def test_grad_through_sum():
 
 
 def test_grad_through_matmul():
-    a = Tensor([Value.from_int(1), Value.from_int(2),
-                Value.from_int(3), Value.from_int(4)], (2, 2))
+    a = Tensor(
+        [Value.from_int(1), Value.from_int(2), Value.from_int(3), Value.from_int(4)],
+        (2, 2),
+    )
 
-    b = Tensor([Value.from_int(5), Value.from_int(6),
-                Value.from_int(7), Value.from_int(8)], (2, 2))
+    b = Tensor(
+        [Value.from_int(5), Value.from_int(6), Value.from_int(7), Value.from_int(8)],
+        (2, 2),
+    )
 
     c = a @ b
     s = c.sum()

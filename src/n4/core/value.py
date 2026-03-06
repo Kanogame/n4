@@ -3,7 +3,8 @@ from collections import deque
 from typing import Self, Optional
 from .op import Op
 
-class Value[T: NumericProtocol]():
+
+class Value[T: NumericProtocol]:
     """
     Класс отражающий одно значение тензона, ожидает в качестве типа self некий класс, поддерживающий базовые операции согластно numericProtocol
     """
@@ -14,12 +15,12 @@ class Value[T: NumericProtocol]():
 
     _backend: type[T]
 
-    def __init__(self, data: T, parent_op: Optional[Op[T]]=None):
+    def __init__(self, data: T, parent_op: Optional[Op[T]] = None):
         """
-        Инициализация класса, ожидает 
-        
+        Инициализация класса, ожидает
+
         data: числовой тип, выпоняющий интерфейс NumericProtocol
-        
+
         last_op: Последняя операция
             Последняя операция произведенная над значением, заполняется только при вызове из операций
             Нужна чтобы проходиться по вычислительному графу
@@ -71,13 +72,13 @@ class Value[T: NumericProtocol]():
 
         while len(stack) != 0:
             v = stack.popleft()
-            if v in visited: 
+            if v in visited:
                 continue
             visited.add(v)
-            
+
             if v.parent_op is not None:
                 v.parent_op.backward_pass()
-            
+
                 for i in v.parent_op.inputs:
                     if i not in visited:
                         stack.appendleft(i)
@@ -85,19 +86,21 @@ class Value[T: NumericProtocol]():
     @staticmethod
     def _forward_pass_operation(op: type[Op[T]], *args: "Value[T]") -> "Value[T]":
         return op(list(args)).forward_pass()[0]
-    
+
     def __add__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора суммирования с использованием класса Add
         """
         from n4.op import Add
+
         return self._forward_pass_operation(Add, self, other)
-    
+
     def __sub__(self: Self, other: "Value[T]") -> "Value[T]":
         """
         Перегрузка оператора вычитания с использованием класса Sub
         """
         from n4.op import Sub
+
         return self._forward_pass_operation(Sub, self, other)
 
     def __mul__(self: Self, other: "Value[T]") -> "Value[T]":
@@ -105,6 +108,7 @@ class Value[T: NumericProtocol]():
         Перегрузка оператора произведения с использованием класса Mul
         """
         from n4.op import Mul
+
         return self._forward_pass_operation(Mul, self, other)
 
     def __truediv__(self: Self, other: "Value[T]") -> "Value[T]":
@@ -112,6 +116,7 @@ class Value[T: NumericProtocol]():
         Перегрузка оператора деления с использованием класса Div
         """
         from n4.op import Div
+
         return self._forward_pass_operation(Div, self, other)
 
     def __pow__(self: Self, other: "Value[T]") -> "Value[T]":
@@ -120,6 +125,7 @@ class Value[T: NumericProtocol]():
         """
 
         from n4.op import Pow
+
         return self._forward_pass_operation(Pow, self, other)
 
     def __neg__(self: Self) -> "Value[T]":
@@ -127,20 +133,22 @@ class Value[T: NumericProtocol]():
         Перегрузка "-N" с использованием класса Neg
         """
         from n4.op import Neg
+
         return self._forward_pass_operation(Neg, self)
-        
+
     def relu(self: Self) -> "Value[T]":
         """
         Классический Relu с использованием класса Relu
         """
 
         from n4.op import Relu
+
         return self._forward_pass_operation(Relu, self)
-    
+
     def apply_activation(self: Self, activation: type[Op[T]]) -> "Value[T]":
         return self._forward_pass_operation(activation, self)
 
     # TODO: all ops from micrograd
-    
+
     def __repr__(self) -> str:
         return f"n4.core.Value(data: {self.data}, grad: {self.grad}, backend: {self._backend}, parent_op: {self.parent_op})"

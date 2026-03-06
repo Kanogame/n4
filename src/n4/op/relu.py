@@ -2,6 +2,7 @@ from n4.core.numeric import NumericProtocol
 from typing import Self
 from n4.core import Op, Value
 
+
 class Relu[T: NumericProtocol](Op[T]):
     def forward_pass(self: Self) -> list[Value[T]]:
         a, *_ = self.input_count(1)

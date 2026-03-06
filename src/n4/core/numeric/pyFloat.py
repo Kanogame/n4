@@ -1,6 +1,7 @@
 from typing import Self
 from random import uniform
 
+
 class PyFloat:
     """
     Реализация NumericProtocol для python float.
@@ -31,8 +32,8 @@ class PyFloat:
         return PyFloat(self.v * other.v)
 
     def __pow__(self, other: "PyFloat") -> "PyFloat":
-        return PyFloat(self.v ** other.v)
-    
+        return PyFloat(self.v**other.v)
+
     def __neg__(self) -> "PyFloat":
         return PyFloat(-self.v)
 

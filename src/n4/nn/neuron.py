@@ -4,6 +4,7 @@ from n4.core import Value, Op
 from n4.tensor import Tensor
 from .nn_base import NnBase
 
+
 # Todo: do we really need numberic protocol on high level?
 # We need to AVOID AT ALL COSTS mixing backends
 # to prevent roundtrips GPU -> CPU -> GPU, or C++ -> Python -> C++
@@ -17,8 +18,7 @@ from .nn_base import NnBase
 #
 # Convert above to docs
 class Neuron[T: NumericProtocol](NnBase):
-
-    # Веса нейрона 
+    # Веса нейрона
     w: Tensor[T]
 
     # Bias нейрона
@@ -27,20 +27,22 @@ class Neuron[T: NumericProtocol](NnBase):
     # Функция активации
     activation: type[Op[T]]
 
-    def __init__(self: Self, w_len: int, activation: Optional[type[Op[T]]]=None):
+    def __init__(self: Self, w_len: int, activation: Optional[type[Op[T]]] = None):
         """
         Инициализация нейрона
 
         w_len: Количество входов нейрона, и соответственно кол-во весов
             Устанавливается в заначение >=1. Иначе будет выброшена ошибка
-        
+
         activation: Функция ативации
             Устанавливается в любую скаляную функцию скалярного агрумента.
-            Если требуется сделать линейрный нейрон, передается None или NonOp 
+            Если требуется сделать линейрный нейрон, передается None или NonOp
         """
         super().__init__(self)
 
-        self.w = Tensor.random_uniform((w_len,), low=-1.0, high=1.0, backend=self._backend)
+        self.w = Tensor.random_uniform(
+            (w_len,), low=-1.0, high=1.0, backend=self._backend
+        )
         self.b = self._backend.zero()
 
         self.activation = self.resolve_activation(activation)
@@ -50,9 +52,9 @@ class Neuron[T: NumericProtocol](NnBase):
         dot: Value[T] = prod.sum()
         pre_activation = dot + self.b
         return pre_activation.apply_activation(self.activation)
-    
+
     def parameters(self: Self) -> list[Value[T]]:
         return self.w._data + [self.b]
-    
+
     def __repr__(self):
         return f"{self.activation} Neuron({len(self.w._data)})"

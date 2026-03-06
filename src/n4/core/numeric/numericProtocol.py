@@ -1,5 +1,6 @@
 from typing import Protocol, runtime_checkable, Self
 
+
 @runtime_checkable
 class NumericProtocol(Protocol):
     """
@@ -14,7 +15,7 @@ class NumericProtocol(Protocol):
     @classmethod
     def one(cls) -> Self: ...
 
-    # Рандом подчиняющий равномерному распределению 
+    # Рандом подчиняющий равномерному распределению
     # TODO: start, end typing
     @classmethod
     def random_uniform(cls, start, end) -> Self: ...
@@ -26,13 +27,12 @@ class NumericProtocol(Protocol):
 
     # +
     def __add__(self: Self, other: Self) -> Self: ...
-    
+
     # *
     def __mul__(self: Self, other: Self) -> Self: ...
-    
+
     # **
     def __pow__(self: Self, other: Self) -> Self: ...
 
     # -a
     def __neg__(self) -> Self: ...
-    

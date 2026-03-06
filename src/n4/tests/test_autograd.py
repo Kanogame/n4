@@ -1,6 +1,7 @@
 from n4.core import Value
 # uv pip install -e .
 
+
 # Addition
 def test_simple_add_forward():
     """Проверяет корректность прямого прохода сложения"""
@@ -27,6 +28,7 @@ def test_simple_add_backward():
     assert a.grad.v == 1.0
     assert b.grad.v == 1.0
 
+
 # Multiplication
 def test_simple_mul_forward():
     """Проверяет прямой проход умножения"""
@@ -50,6 +52,7 @@ def test_simple_mul_backward():
 
     assert a.grad.v == 5
     assert b.grad.v == 4
+
 
 ## chain rule
 def test_chain_rule_basic():
@@ -91,6 +94,7 @@ def test_shared_node():
 
     assert a.grad.v == 6
 
+
 def test_deep_chain():
     """
     Проверяет глубокую композицию:
@@ -117,6 +121,7 @@ def test_deep_chain():
     assert c.grad.v == (a.data.v + b.data.v) * e.data.v
     assert d.grad.v == e.data.v
     assert e.grad.v == 13
+
 
 def test_used_twice():
     """

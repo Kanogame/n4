@@ -2,6 +2,7 @@ from typing import Self
 from n4.core.numeric import NumericProtocol
 from n4.core import Op, Value
 
+
 class Neg[T: NumericProtocol](Op[T]):
     def forward_pass(self: Self) -> list[Value[T]]:
         a, *_ = self.input_count(1)
@@ -9,9 +10,9 @@ class Neg[T: NumericProtocol](Op[T]):
         b = Value[T](-a.data, parent_op=self)
 
         self.outputs = [b]
-        
+
         return self.outputs
-        
+
     def backward_pass(self: Self):
         out, *_ = self.output_count(1)
         a, *_ = self.input_count(1)
