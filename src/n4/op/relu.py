@@ -9,14 +9,17 @@ class Relu[T: NumericProtocol](Op[T]):
 
         backendZero: T = a._backend.zero()
 
-        b = Value(backendZero if a.data < 0 else a.data, parent_op=self)
+        b = Value(backendZero if a.data < backendZero else a.data, parent_op=self)
 
         self.outputs = [b]
 
         return self.outputs
 
-    def backward_pass(self: Self):
+    def backward_pass(self: Self) -> None:
         out, *_ = self.output_count(1)
         a, *_ = self.input_count(1)
 
-        a.grad += (out.data > 0) * out.grad
+        backendZero: T = a._backend.zero()
+
+        if out.data > backendZero:
+            a.grad += out.grad

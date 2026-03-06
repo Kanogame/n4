@@ -11,7 +11,7 @@ class Sequential[T: NumericProtocol](NnBase[T]):
     layers: list[Layer[T]]
 
     def __init__(self: Self, *args: Layer[T]):
-        super().__init__(self)
+        super().__init__()
 
         self.layers = list(args)
 

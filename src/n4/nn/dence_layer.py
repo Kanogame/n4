@@ -22,7 +22,7 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         out_features: int,
         activation: Optional[type[Op[T]]] = None,
     ):
-        super().__init__(self)
+        super().__init__()
 
         self.in_features = in_features
         self.out_features = out_features

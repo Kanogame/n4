@@ -13,7 +13,7 @@ class Neg[T: NumericProtocol](Op[T]):
 
         return self.outputs
 
-    def backward_pass(self: Self):
+    def backward_pass(self: Self) -> None:
         out, *_ = self.output_count(1)
         a, *_ = self.input_count(1)
 

@@ -4,7 +4,7 @@ from n4.core import Value
 import pytest
 
 
-def test_init_correct_shape():
+def test_init_correct_shape() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
@@ -13,34 +13,34 @@ def test_init_correct_shape():
     assert t.size == 6
 
 
-def test_init_wrong_shape():
+def test_init_wrong_shape() -> None:
     data = [Value.from_int(i) for i in range(5)]
     with pytest.raises(ValueError):
         Tensor(data, (2, 3))
 
 
-def test_zeros():
+def test_zeros() -> None:
     t = Tensor.zeros((2, 2), backend=PyFloat)
 
     for v in t._data:
         assert v.data.v == 0.0
 
 
-def test_ones():
+def test_ones() -> None:
     t = Tensor.ones((2, 2), backend=PyFloat)
 
     for v in t._data:
         assert v.data.v == 1
 
 
-def test_random_uniform_range():
+def test_random_uniform_range() -> None:
     t = Tensor.random_uniform((10,), backend=PyFloat, low=-2, high=2)
 
     for v in t._data:
         assert -2 <= v.data.v <= 2
 
 
-def test_to_list_2d():
+def test_to_list_2d() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
@@ -50,28 +50,34 @@ def test_to_list_2d():
     assert len(lst[0]) == 3
 
 
-def test_get_single_element():
+def test_get_single_element() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
-    v: Value[PyFloat] = t[1, 2]  # ty:ignore[invalid-assignment]
+    res = t[1, 2]
+    assert type(res) is Value[PyFloat]
+
+    v: Value[PyFloat] = res
 
     assert isinstance(v, Value)
     assert v.data.v == 5.0
 
 
-def test_get_slice():
+def test_get_slice() -> None:
     data: list[Value[PyFloat]] = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
-    row: Tensor[PyFloat] = t[1]  # ty:ignore[invalid-assignment]
+    res = t[1]
+    assert type(res) is Tensor[PyFloat]
+
+    row: Tensor[PyFloat] = res
 
     assert isinstance(row, Tensor)
     assert row.shape == (3,)
     assert row._data[0].data.v == 1
 
 
-def test_get_out_of_bounds():
+def test_get_out_of_bounds() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
@@ -79,7 +85,7 @@ def test_get_out_of_bounds():
         t[3]
 
 
-def test_reshape_valid():
+def test_reshape_valid() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
@@ -89,7 +95,7 @@ def test_reshape_valid():
     assert t2.size == 6
 
 
-def test_reshape_invalid():
+def test_reshape_invalid() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
@@ -97,7 +103,7 @@ def test_reshape_invalid():
         t.reshape((4, 4))
 
 
-def test_tensor_add():
+def test_tensor_add() -> None:
     a = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
     b = Tensor([Value.from_int(3), Value.from_int(4)], (2,))
 
@@ -107,7 +113,7 @@ def test_tensor_add():
     assert c._data[1].data.v == 6
 
 
-def test_tensor_scalar_add():
+def test_tensor_scalar_add() -> None:
     a = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
     s = Value.from_int(5)
 
@@ -117,7 +123,7 @@ def test_tensor_scalar_add():
     assert c._data[1].data.v == 7
 
 
-def test_tensor_shape_mismatch():
+def test_tensor_shape_mismatch() -> None:
     a = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
     b = Tensor([Value.from_int(1), Value.from_int(2), Value.from_int(3)], (3,))
 
@@ -125,7 +131,7 @@ def test_tensor_shape_mismatch():
         a + b
 
 
-def test_neg():
+def test_neg() -> None:
     t = Tensor([Value.from_int(2), Value.from_int(-3)], (2,))
     r = -t
 
@@ -133,7 +139,7 @@ def test_neg():
     assert r._data[1].data.v == 3
 
 
-def test_matmul_basic():
+def test_matmul_basic() -> None:
     a = Tensor(
         [Value.from_int(1), Value.from_int(2), Value.from_int(3), Value.from_int(4)],
         (2, 2),
@@ -161,7 +167,7 @@ def test_matmul_basic():
     assert c._data[3].data.v == 50
 
 
-def test_matmul_shape_error():
+def test_matmul_shape_error() -> None:
     a = Tensor([Value.from_int(1)], (1, 1))
     b = Tensor([Value.from_int(1)], (1,))
 
@@ -169,7 +175,7 @@ def test_matmul_shape_error():
         a @ b
 
 
-def test_sum_all():
+def test_sum_all() -> None:
     t = Tensor([Value.from_int(1), Value.from_int(2), Value.from_int(3)], (3,))
 
     s: Value[PyFloat] = t.sum()
@@ -177,44 +183,44 @@ def test_sum_all():
     assert s.data.v == 6
 
 
-def test_sum_dim():
+def test_sum_dim() -> None:
     data = [Value.from_int(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     s = t.sum_dim(dim=0)
 
     assert s.shape == (3,)
-    assert s._data[0].data == 3
-    assert s._data[1].data == 5
-    assert s._data[2].data == 7
+    assert s._data[0].data.v == 3
+    assert s._data[1].data.v == 5
+    assert s._data[2].data.v == 7
 
 
-def test_sum_invalid_dim():
+def test_sum_invalid_dim() -> None:
     t = Tensor([Value.from_int(1)], (1,))
 
     with pytest.raises(ValueError):
         t.sum_dim(dim=3)
 
 
-def test_mean_all():
+def test_mean_all() -> None:
     t = Tensor([Value.from_int(1), Value.from_int(3)], (2,))
 
     m = t.mean()
 
-    assert abs(m.data - 2.0) < 1e-6
+    assert abs(m.data.v - 2.0) < 1e-6
 
 
-def test_mean_dim():
+def test_mean_dim() -> None:
     data = [Value.from_int(1), Value.from_int(3), Value.from_int(5), Value.from_int(7)]
     t = Tensor(data, (2, 2))
 
     m = t.mean_dim(dim=0)
 
-    assert m._data[0].data == 3
-    assert m._data[1].data == 5
+    assert m._data[0].data.v == 3
+    assert m._data[1].data.v == 5
 
 
-def test_grad_through_sum():
+def test_grad_through_sum() -> None:
     t = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
 
     s = t.sum()
@@ -224,7 +230,7 @@ def test_grad_through_sum():
         assert v.grad.v == 1
 
 
-def test_grad_through_matmul():
+def test_grad_through_matmul() -> None:
     a = Tensor(
         [Value.from_int(1), Value.from_int(2), Value.from_int(3), Value.from_int(4)],
         (2, 2),

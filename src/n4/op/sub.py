@@ -13,10 +13,10 @@ class Sub[T: NumericProtocol](Op[T]):
 
         return self.outputs
 
-    def backward_pass(self: Self):
+    def backward_pass(self: Self) -> None:
 
         out, *_ = self.output_count(1)
         a, b = self.input_count(2)
 
         a.grad += out.grad
-        b.grad -= out.grad
+        b.grad += -out.grad

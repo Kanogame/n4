@@ -17,7 +17,7 @@ from .nn_base import NnBase
 # Also, T in current impl in inferred implicitly (if ever), need improvements
 #
 # Convert above to docs
-class Neuron[T: NumericProtocol](NnBase):
+class Neuron[T: NumericProtocol](NnBase[T]):
     # Веса нейрона
     w: Tensor[T]
 
@@ -38,16 +38,16 @@ class Neuron[T: NumericProtocol](NnBase):
             Устанавливается в любую скаляную функцию скалярного агрумента.
             Если требуется сделать линейрный нейрон, передается None или NonOp
         """
-        super().__init__(self)
+        super().__init__()
 
         self.w = Tensor.random_uniform(
             (w_len,), low=-1.0, high=1.0, backend=self._backend
         )
-        self.b = self._backend.zero()
+        self.b = Value(self._backend.zero())
 
         self.activation = self.resolve_activation(activation)
 
-    def __call__(self: Self, x: Tensor[T]):
+    def __call__(self: Self, x: Tensor[T]) -> Value[T]:
         prod = self.w * x
         dot: Value[T] = prod.sum()
         pre_activation = dot + self.b
@@ -56,5 +56,5 @@ class Neuron[T: NumericProtocol](NnBase):
     def parameters(self: Self) -> list[Value[T]]:
         return self.w._data + [self.b]
 
-    def __repr__(self):
+    def __repr__(self: Self) -> str:
         return f"{self.activation} Neuron({len(self.w._data)})"

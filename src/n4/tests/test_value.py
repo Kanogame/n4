@@ -1,7 +1,7 @@
 from n4.core import Value
 
 
-def test_value_initialization():
+def test_value_initialization() -> None:
     """Проверяет корректную инициализацию Value"""
 
     x = Value.from_int(5)

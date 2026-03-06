@@ -15,10 +15,13 @@ class NumericProtocol(Protocol):
     @classmethod
     def one(cls) -> Self: ...
 
-    # Рандом подчиняющий равномерному распределению
-    # TODO: start, end typing
+    # Из числа с плавующей точкой
     @classmethod
-    def random_uniform(cls, start, end) -> Self: ...
+    def from_float(cls, f: float) -> Self: ...
+
+    # Рандом подчиняющий равномерному распределению
+    @classmethod
+    def random_uniform(cls, start: float, end: float) -> Self: ...
 
     # Перегрузки операторов
 
@@ -28,8 +31,14 @@ class NumericProtocol(Protocol):
     # +
     def __add__(self: Self, other: Self) -> Self: ...
 
+    # -
+    def __sub__(self: Self, other: Self) -> Self: ...
+
     # *
     def __mul__(self: Self, other: Self) -> Self: ...
+
+    # /
+    def __truediv__(self: Self, other: Self) -> Self: ...
 
     # **
     def __pow__(self: Self, other: Self) -> Self: ...

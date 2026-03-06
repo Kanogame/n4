@@ -19,7 +19,11 @@ class PyFloat:
         return cls(1.0)
 
     @classmethod
-    def random_uniform(cls, start, end) -> Self:
+    def from_float(cls, f: float) -> Self:
+        return cls(f)
+
+    @classmethod
+    def random_uniform(cls, start: float, end: float) -> Self:
         return cls(uniform(start, end))
 
     def __lt__(self, other: "PyFloat") -> bool:
@@ -28,8 +32,14 @@ class PyFloat:
     def __add__(self, other: "PyFloat") -> "PyFloat":
         return PyFloat(self.v + other.v)
 
+    def __sub__(self, other: "PyFloat") -> "PyFloat":
+        return PyFloat(self.v - other.v)
+
     def __mul__(self, other: "PyFloat") -> "PyFloat":
         return PyFloat(self.v * other.v)
+
+    def __truediv__(self, other: "PyFloat") -> "PyFloat":
+        return PyFloat(self.v / other.v)
 
     def __pow__(self, other: "PyFloat") -> "PyFloat":
         return PyFloat(self.v**other.v)

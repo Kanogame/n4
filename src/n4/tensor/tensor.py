@@ -319,7 +319,7 @@ class Tensor[T: NumericProtocol]:
         # Сумма по измерению
         new_shape = list(self._shape)
         new_shape.pop(dim)
-        new_shape = tuple(new_shape)
+        new_shape_tuple = tuple(new_shape)
 
         # Шаг
         stride = 1
@@ -331,23 +331,23 @@ class Tensor[T: NumericProtocol]:
         new_data = []
         for i in range(outer):
             for j in range(stride):
-                s = self._backend.zero()
+                s = Value(self._backend.zero())
                 base = i * self._shape[dim] * stride + j
                 for k in range(self._shape[dim]):
                     s += self._data[base + k * stride]
                 new_data.append(s)
 
-        return Tensor(new_data, new_shape)
+        return Tensor(new_data, new_shape_tuple)
 
     def mean(self: Self) -> Value[T]:
         """Среднее всех элементов тензора"""
 
         total = self.sum()
-        return total / self._backend.from_float(float(self.size))
+        return total / Value(self._backend.from_float(float(self.size)))
 
     def mean_dim(self: Self, dim: int) -> "Tensor[T]":
         """Среднее всех элементов по измерению"""
 
         summed = self.sum_dim(dim)
-        factor = self._backend.from_float(float(self._shape[dim]))
+        factor = Value(self._backend.from_float(float(self._shape[dim])))
         return summed / factor

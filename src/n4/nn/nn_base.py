@@ -16,10 +16,7 @@ class NnBase[T: NumericProtocol](ABC):
     # Бекенд вычислений
     _backend: type[T]
 
-    def __init__(self: Self):
-        self._backend = type(T)
-
-    def zero_grad(self: Self):
+    def zero_grad(self: Self) -> None:
         for v in self.parameters():
             v.zero_grad()
 

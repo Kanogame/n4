@@ -31,12 +31,5 @@ class Model[T: NumericProtocol](ABC):
         ```
     """
 
-    # Бекенд вычислений
-    _backend: type[T]
-    result: Tensor[T]
-
-    def __init__(self: Self):
-        self._backend = type(T)
-
     @abstractmethod
     def forward_pass(self: Self, x: Tensor[T]) -> Tensor[T]: ...

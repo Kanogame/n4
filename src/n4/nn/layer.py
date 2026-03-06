@@ -14,7 +14,7 @@ from .nn_base import NnBase
 from n4.core.numeric import NumericProtocol
 
 
-class Layer[T: NumericProtocol](NnBase, ABC):
+class Layer[T: NumericProtocol](NnBase[T], ABC):
     """
     Базовый класс для любых слоев сети
 
@@ -22,15 +22,15 @@ class Layer[T: NumericProtocol](NnBase, ABC):
     """
 
     def __init__(self, activation: Optional[type[Op[T]]] = None):
-        super().__init__(self)
+        super().__init__()
 
     @abstractmethod
-    def forward(self, x: Tensor[T]) -> Tensor[T]:
+    def forward_pass(self, x: Tensor[T]) -> Tensor[T]:
         """Прямой проход слоя, должен быть реализован подклассами"""
         pass
 
     def __call__(self, x: Tensor[T]) -> Tensor[T]:
-        return self.forward(x)
+        return self.forward_pass(x)
 
     @abstractmethod
     def parameters(self) -> list[Value[T]]:

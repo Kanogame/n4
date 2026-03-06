@@ -13,8 +13,10 @@ class Pow[T: NumericProtocol](Op[T]):
 
         return self.outputs
 
-    def backward_pass(self: Self):
+    def backward_pass(self: Self) -> None:
         a, b = self.input_count(2)
         out, *_ = self.output_count(1)
 
-        a.grad += (b.data * a.data ** (b.data - 1)) * out.grad
+        backendOne: T = a._backend.one()
+
+        a.grad += (b.data * a.data ** (b.data - backendOne)) * out.grad

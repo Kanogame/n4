@@ -52,12 +52,12 @@ class Op[T: NumericProtocol](ABC):
         pass
 
     @abstractmethod
-    def backward_pass(self: Self):
+    def backward_pass(self: Self) -> None:
         """обратный проход функции"""
         pass
 
     @staticmethod
-    def _count_args(args: list[Value[T]], desired_size: int):
+    def _count_args(args: list[Value[T]], desired_size: int) -> list[Value[T]]:
         if len(args) != desired_size:
             raise TypeError("Received incorrent number of arguments")
 

@@ -31,7 +31,7 @@ class Value[T: NumericProtocol]:
         self.grad: T = self._backend.zero()
         self.parent_op = parent_op
 
-    def zero_grad(self: Self):
+    def zero_grad(self: Self) -> None:
         """
         Метод позволят обнулить градиент
         """
@@ -55,7 +55,7 @@ class Value[T: NumericProtocol]:
     def get_backend(self: Self) -> type:
         return self._backend
 
-    def backward(self: Self):
+    def backward(self: Self) -> None:
         """
         Метод возврата по вычисительному графу с подсчетом градиента.
 

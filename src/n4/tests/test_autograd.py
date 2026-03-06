@@ -3,7 +3,7 @@ from n4.core import Value
 
 
 # Addition
-def test_simple_add_forward():
+def test_simple_add_forward() -> None:
     """Проверяет корректность прямого прохода сложения"""
 
     a = Value.from_int(2)
@@ -14,7 +14,7 @@ def test_simple_add_forward():
     assert c.data.v == 5
 
 
-def test_simple_add_backward():
+def test_simple_add_backward() -> None:
     """Проверяет корректность градиентов при сложении"""
 
     a = Value.from_int(2)
@@ -30,7 +30,7 @@ def test_simple_add_backward():
 
 
 # Multiplication
-def test_simple_mul_forward():
+def test_simple_mul_forward() -> None:
     """Проверяет прямой проход умножения"""
 
     a = Value.from_int(4)
@@ -41,7 +41,7 @@ def test_simple_mul_forward():
     assert c.data.v == 20
 
 
-def test_simple_mul_backward():
+def test_simple_mul_backward() -> None:
     """Проверяет корректность градиентов при умножении"""
 
     a = Value.from_int(4)
@@ -55,7 +55,7 @@ def test_simple_mul_backward():
 
 
 ## chain rule
-def test_chain_rule_basic():
+def test_chain_rule_basic() -> None:
     """
     Проверяет корректность цепного правила:
     f = (a + b) * c
@@ -78,7 +78,7 @@ def test_chain_rule_basic():
     assert c.grad.v == 5
 
 
-def test_shared_node():
+def test_shared_node() -> None:
     """
     Проверяет корректность графа при повторном использовании узла:
     f = a * a
@@ -95,7 +95,7 @@ def test_shared_node():
     assert a.grad.v == 6
 
 
-def test_deep_chain():
+def test_deep_chain() -> None:
     """
     Проверяет глубокую композицию:
     f = (((a + b) * c) + d) * e
@@ -123,7 +123,7 @@ def test_deep_chain():
     assert e.grad.v == 13
 
 
-def test_used_twice():
+def test_used_twice() -> None:
     """
     Проверяет использовании значения дважды:
     f = (x+y) + (x*y)
