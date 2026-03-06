@@ -55,7 +55,7 @@ def test_get_single_element() -> None:
     t = Tensor(data, (2, 3))
 
     res = t[1, 2]
-    assert type(res) is Value[PyFloat]
+    assert type(res) is Value
 
     v: Value[PyFloat] = res
 
@@ -68,7 +68,7 @@ def test_get_slice() -> None:
     t = Tensor(data, (2, 3))
 
     res = t[1]
-    assert type(res) is Tensor[PyFloat]
+    assert type(res) is Tensor
 
     row: Tensor[PyFloat] = res
 
