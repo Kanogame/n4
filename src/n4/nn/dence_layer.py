@@ -20,9 +20,10 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         self,
         in_features: int,
         out_features: int,
-        activation: Optional[type[Op[T]]] = None,
+        backend: type[T],
+        activation: Optional[type[Op[T]]] = None
     ):
-        super().__init__()
+        super().__init__(backend)
 
         self.in_features = in_features
         self.out_features = out_features
@@ -36,7 +37,7 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         self.bias = Tensor.zeros((out_features,), backend=self._backend)
         self.activation = self.resolve_activation(activation)
 
-    def forward(self, x: Tensor[T]) -> Tensor[T]:
+    def forward_pass(self, x: Tensor[T]) -> Tensor[T]:
         """
         Применить слой
 

@@ -1,6 +1,7 @@
 from n4.tensor import Tensor
 from typing import Self
 from n4.core.numeric import NumericProtocol
+from n4.core import Value
 
 from .nn_base import NnBase
 from .layer import Layer
@@ -11,14 +12,14 @@ class Sequential[T: NumericProtocol](NnBase[T]):
     layers: list[Layer[T]]
 
     def __init__(self: Self, *args: Layer[T]):
-        super().__init__()
+        super().__init__(args[0]._backend)
 
         self.layers = list(args)
 
         if len(args) == 0:
             raise ValueError("Sequential model must contain at least one layer")
 
-        if self.layers_have_same_backend():
+        if not self.layers_have_same_backend():
             raise ValueError("Sequential model must contain layers with same backend")
 
     def forward_pass(self: Self, x: Tensor[T]) -> Tensor[T]:
@@ -28,6 +29,13 @@ class Sequential[T: NumericProtocol](NnBase[T]):
             nextv = i(nextv)
 
         return nextv
+
+    def parameters(self: Self) -> list[Value[T]]:
+        """Вернуть параметры всех слоев"""
+        params: list[Value[T]] = []
+        for layer in self.layers:
+            params.extend(layer.parameters())
+        return params
 
     def layers_have_same_backend(self: Self) -> bool:
         first: type[T] = self.layers[0]._backend

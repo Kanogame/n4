@@ -43,7 +43,7 @@ class Tensor[T: NumericProtocol]:
 
         self._data = data
         self._shape = shape
-        self._backend = data[0].get_backend()
+        self._backend = self.ensure_same_backend(data)
 
     @property
     def shape(self) -> Tuple[int, ...]:
@@ -72,6 +72,17 @@ class Tensor[T: NumericProtocol]:
     @staticmethod
     def get_total_size(shape: Tuple[int, ...]) -> int:
         return reduce(operator.mul, shape, 1)
+    
+    @staticmethod
+    def ensure_same_backend(data: List[Value[T]]) -> type[T]:
+        first = data[0].get_backend()
+
+        for i in data[1:]:
+            if first is not i.get_backend():
+                raise ValueError(f"Data must have same backend")
+        
+        return first
+
 
     @staticmethod
     def zeros[N: NumericProtocol](
