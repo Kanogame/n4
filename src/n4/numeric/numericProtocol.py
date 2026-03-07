@@ -6,7 +6,7 @@ class NumericProtocol(Protocol):
     """
     Интерфейс для числовых типов, используемых в Value.
     """
-    
+
     # Из числа с плавующей точкой
     @classmethod
     def from_float(cls, f: float) -> Self: ...
@@ -37,3 +37,6 @@ class NumericProtocol(Protocol):
 
     # -a
     def __neg__(self) -> Self: ...
+
+    # e^a
+    def exp(self) -> Self: ...

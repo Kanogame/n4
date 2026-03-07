@@ -1,7 +1,9 @@
+import math
 from typing import Self
 from random import uniform
 
 
+# TODO: as example of multiple backends, implement decimal
 class PyFloat:
     """
     Реализация NumericProtocol для python float.
@@ -38,6 +40,9 @@ class PyFloat:
 
     def __neg__(self) -> "PyFloat":
         return PyFloat(-self.v)
+
+    def exp(self) -> "PyFloat":
+        return PyFloat(math.exp(self.v))
 
     def __repr__(self) -> str:
         return f"PyFloat({self.v})"

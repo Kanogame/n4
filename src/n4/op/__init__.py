@@ -3,6 +3,7 @@ from .sub import Sub
 from .mul import Mul
 from .div import Div
 from .pow import Pow
+from .exp import Exp
 from .relu import Relu
 from .nonOp import NonOp
 from .neg import Neg
@@ -13,6 +14,7 @@ __all__ = [
     "Mul",
     "Div",
     "Pow",
+    "Exp",
     "Relu",
     "Neg",
     "NonOp",

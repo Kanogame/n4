@@ -5,16 +5,8 @@ from .layer import Layer
 from typing import Optional
 
 
-# TODO: requires refactoring
 class DenseLayer[T: NumericProtocol](Layer[T]):
-    """
-    Полносвязный слой
-
-    Аргументы:
-        in_features: кол-во входных параметров
-        out_features: кол-во выходных параметров
-        activation: функция артивации
-    """
+    """Полносвязный слой нейронов, использует одну функцию активации"""
 
     def __init__(
         self,
@@ -23,6 +15,15 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
         backend: type[T],
         activation: Optional[type[Op[T]]] = None,
     ):
+        """
+        Для функции вида R^n -> R^m
+
+        Аргументы:
+            in_features: кол-во входных параметров (R^n) - кол-во входов каждого нейрона
+            out_features: кол-во выходных параметров (R^m) - кол-во нейронов
+            activation: функция артивации
+        """
+
         super().__init__(backend)
 
         self.in_features = in_features
@@ -77,11 +78,9 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
 
             out_data.extend(out_row._data)
 
-        activated: list[Value[T]] = [
-            v.apply_activation(self.activation) for v in out_data
-        ]
-
-        return Tensor[T](activated, (batch_size, self.out_features))
+        return Tensor[T](out_data, (batch_size, self.out_features)).apply_activation(
+            self.activation
+        )
 
     def parameters(self) -> list[Value[T]]:
         return self.weights._data + self.bias._data

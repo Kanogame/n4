@@ -1,7 +1,7 @@
 import operator
 from functools import reduce
-from typing import List, Tuple, Any, Union, Optional, Self
-from n4.core import Value
+from typing import List, Tuple, Any, Union, Self
+from n4.core import Value, Op
 from n4.numeric import NumericProtocol
 # TODO: sketch, full refactor required
 
@@ -147,6 +147,28 @@ class Tensor[T: NumericProtocol]:
             for i in range(self._shape[0])
         ]
 
+    def _normalize_index(self, idx: Union[int, Tuple[int, ...]]) -> Tuple[int, ...]:
+        """Если индекс представляет собой int, создаем (idx), если он превышает размерность, выходим, иначе возвращаем idx"""
+
+        if isinstance(idx, int):
+            idx = (idx,)
+        if len(idx) > self.ndim:
+            raise IndexError(
+                f"Index {idx} has too many dimensions for shape {self._shape}"
+            )
+        return idx
+
+    def _flat_start(self, idx: Tuple[int, ...]) -> int:
+        """Безопастно считает первых индекс слайса по индексу"""
+        flat = 0
+        stride = 1
+        for i in range(len(idx) - 1, -1, -1):
+            if idx[i] >= self._shape[i]:
+                raise IndexError(f"Index {idx[i]} out of bounds for dimension {i}")
+            flat += idx[i] * stride
+            stride *= self._shape[i]
+        return flat
+
     def __getitem__(
         self: Self, idx: Union[int, Tuple[int, ...]]
     ) -> Union[Value[T], "Tensor[T]"]:
@@ -157,31 +179,59 @@ class Tensor[T: NumericProtocol]:
         иначе, будет возращена копия тензора (слайс)
         """
 
-        if isinstance(idx, int):
-            idx = (idx,)
-        if len(idx) > self.ndim:
-            raise IndexError(
-                f"Index {idx} has too many dimensions for shape {self._shape}"
-            )
+        # Всегда Tuple
+        idx = self._normalize_index(idx)
 
-        # Compute flat index of the start of the slice
-        flat = 0
-        stride = 1
-        for i in range(len(idx) - 1, -1, -1):
-            if idx[i] >= self._shape[i]:
-                raise IndexError(f"Index {idx[i]} out of bounds for dimension {i}")
-            flat += idx[i] * stride
-            stride *= self._shape[i]
+        # Начало среза
+        flat = self._flat_start(idx)
 
+        # Если нужен 1 элемент, т.е. если индекс указал все измерения
         if len(idx) == self.ndim:
-            # Return a single element
             return self._data[flat]
 
-        # Return a sub-tensor (copy)
+        # Под-тензор
         new_shape = self._shape[len(idx) :]
         step = self.get_total_size(new_shape)
         data_slice = self._data[flat : flat + step]
         return Tensor(data_slice, new_shape)
+
+    def __setitem__(
+        self: Self,
+        idx: Union[int, Tuple[int, ...]],
+        value: Union[Value[T], "Tensor[T]"],
+    ) -> None:
+        """
+        Установка значения по индексанции тензора
+
+        Подерживает индексацию по int или tuple. Если индекс указывает ВСЕ измерения, то задаст Value,
+        иначе, задаст нужное кол-во элементов
+        """
+
+        # Всегда Tuple
+        idx = self._normalize_index(idx)
+
+        # Начало среза
+        flat = self._flat_start(idx)
+
+        # Если нужно обновить 1 элемент, т.е. если индекс указал все измерения
+        if len(idx) == self.ndim:
+            if isinstance(value, Tensor):
+                raise TypeError("Scalar assignment requires a non‑Tensor value")
+            self._data[flat] = value
+            return
+
+        # Обновить под-тензор
+        new_shape = self._shape[len(idx) :]
+        step = self.get_total_size(new_shape)
+
+        if not isinstance(value, Tensor):
+            raise TypeError("Slice assignment requires a Tensor value")
+        if value._shape != new_shape:
+            raise ValueError(
+                f"Shape mismatch: target slice shape {new_shape} vs value shape {value._shape}"
+            )
+
+        self._data[flat : flat + step] = value._data
 
     def reshape(self, new_shape: Tuple[int, ...]) -> "Tensor[T]":
         """Создает новый тензор с указанной размерностью."""
@@ -384,3 +434,11 @@ class Tensor[T: NumericProtocol]:
         summed = self.sum_dim(dim)
         factor = Value(self._backend.from_float(float(self._shape[dim])))
         return summed / factor
+
+    def apply_activation(self: Self, activation: type[Op[T]]) -> "Tensor[T]":
+        new_tensor = Tensor(self._data, self.shape)
+
+        for i in range(len(self._data)):
+            new_tensor._data[i] = self._data[i].apply_activation(activation)
+
+        return new_tensor

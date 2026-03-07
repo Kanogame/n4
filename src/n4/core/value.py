@@ -149,6 +149,15 @@ class Value[T: NumericProtocol]:
 
         return self._forward_pass_operation(Relu, self)
 
+    def exp(self: Self) -> "Value[T]":
+        """
+        Возведение экспоненты в степерь с использованием класса Exp
+        """
+
+        from n4.op import Exp
+
+        return self._forward_pass_operation(Exp, self)
+
     def apply_activation(self: Self, activation: type[Op[T]]) -> "Value[T]":
         return self._forward_pass_operation(activation, self)
 
