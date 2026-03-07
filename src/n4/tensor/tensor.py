@@ -69,20 +69,39 @@ class Tensor[T: NumericProtocol]:
 
         return self._backend
 
+    @property
+    def Transposed(self) -> "Tensor[T]":
+        """Транспозиция 2d матрицы"""
+        if self.ndim != 2:
+            raise ValueError("Transpose is only defined for 2‑D tensors")
+
+        rows, cols = self.shape
+        transposed_data: list[Value[T]] = [Value.from_float(0, self._backend)] * (
+            rows * cols
+        )
+
+        for r in range(rows):
+            row_offset = r * cols
+            for c in range(cols):
+                orig_idx = row_offset + c
+                trans_idx = c * rows + r
+                transposed_data[trans_idx] = self._data[orig_idx]
+
+        return Tensor(transposed_data, (cols, rows))
+
     @staticmethod
     def get_total_size(shape: Tuple[int, ...]) -> int:
         return reduce(operator.mul, shape, 1)
-    
+
     @staticmethod
     def ensure_same_backend(data: List[Value[T]]) -> type[T]:
         first = data[0].get_backend()
 
         for i in data[1:]:
             if first is not i.get_backend():
-                raise ValueError(f"Data must have same backend")
-        
-        return first
+                raise ValueError("Data must have same backend")
 
+        return first
 
     @staticmethod
     def zeros[N: NumericProtocol](
@@ -200,35 +219,38 @@ class Tensor[T: NumericProtocol]:
     def _broadcast_get_compatible_dims(
         a: Tuple[int, ...], b: Tuple[int, ...]
     ) -> Tuple[Tuple[int, ...], Tuple[int, ...]]:
-        """Проверяет можно ли при помощи паддинга из нулей привести тензоры к одной форме"""
+        """Проверяет можно ли при помощи паддинга из нулей привести тензоры к одной форме
 
-        # a.shape = (1, 4)
-        # b.shape = (3, 1, 4)
+        Пример:
+            a.shape = (1, 4)
+            b.shape = (3, 1, 4)
+
+        После приведения обе формы становятся одинаковыми:
+            (1, 1, 4)  и  (3, 1, 4)
+        """
 
         max_n_dim = max(len(a), len(b))
+
         a_offset = max_n_dim - len(a)
         b_offset = max_n_dim - len(b)
 
-        # max_n_dim 3
+        sized_a = [1] * a_offset + list(a)  # например: [1, 1, 4]
+        sized_b = [1] * b_offset + list(b)  # например: [3, 1, 4]
 
-        sized_a = [1] * a_offset + list(a)
-        sized_b = [1] * b_offset + list(b)
-
-        # sized_a = [1, 1, 4]
-        # sized_b = [3, 1, 4]
+        print(sized_a, sized_b)  # отладочный вывод
 
         for i in range(max_n_dim):
-            expanded = (
-                sized_a[i] == 1 or sized_b[i] == 1
-            )  # хотя бы один из 2 тензоров можно расширить
-            identical = sized_a[i] == sized_b[i]  # Размеры совпадают
+            expanded = sized_a[i] == 1 or sized_b[i] == 1  # можно расширить
+            identical = sized_a[i] == sized_b[i]  # уже одинаково
+
+            print(expanded, identical)  # отладочный вывод
 
             if not (expanded or identical):
                 raise RuntimeError(
                     f"Tensors with shapes {a} and {b} cannot be broadcasted"
                 )
 
-        return (tuple(a), tuple(b))
+        return (tuple(sized_a), tuple(sized_b))
 
     def _broadcast_to(self: Self, target_shape: Tuple[int, ...]) -> "Tensor[T]":
         """Преобразует Тензор в указанную форму"""

@@ -1,5 +1,4 @@
 from n4.tensor.tensor import Tensor
-from n4.core import Value
 from .helpers import new_value
 
 
