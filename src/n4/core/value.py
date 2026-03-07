@@ -1,4 +1,4 @@
-from n4.numeric import PyFloat, NumericProtocol
+from n4.numeric import NumericProtocol
 from collections import deque
 from typing import Self, Optional
 from .op import Op
@@ -28,7 +28,7 @@ class Value[T: NumericProtocol]:
 
         self.data: T = data
         self._backend = type(data)
-        self.grad: T = self._backend.zero()
+        self.grad: T = self._backend.from_float(0)
         self.parent_op = parent_op
 
     def zero_grad(self: Self) -> None:
@@ -36,21 +36,25 @@ class Value[T: NumericProtocol]:
         Метод позволят обнулить градиент
         """
 
-        self.grad = self._backend.zero()
+        self.grad = self._backend.from_float(0)
 
     @classmethod
-    def from_int(cls, value: int) -> "Value[PyFloat]":
+    def from_int[N: NumericProtocol](cls, value: int, backend: type[N]) -> "Value[N]":
         """
-        Создание Value с backend PyFloat из int.
+        Создание Value с бекендом backend из int.
         """
-        return Value(PyFloat(value))
+
+        return Value(backend.from_float(value))
 
     @classmethod
-    def from_float(cls, value: float) -> "Value[PyFloat]":
+    def from_float[N: NumericProtocol](
+        cls, value: float, backend: type[N]
+    ) -> "Value[N]":
         """
-        Создание Value с backend PyFloat из float.
+        Создание Value с бекендом backend из int.
         """
-        return Value(PyFloat(value))
+
+        return Value(backend.from_float(value))
 
     def get_backend(self: Self) -> type:
         return self._backend
@@ -64,7 +68,7 @@ class Value[T: NumericProtocol]:
         3. На каждом из шагов обхода, градиент распространяется сразу
         """
 
-        self.grad = self._backend.one()
+        self.grad = self._backend.from_float(1)
 
         stack = deque[Value[T]]()
         stack.append(self)
@@ -147,8 +151,6 @@ class Value[T: NumericProtocol]:
 
     def apply_activation(self: Self, activation: type[Op[T]]) -> "Value[T]":
         return self._forward_pass_operation(activation, self)
-
-    # TODO: all ops from micrograd
 
     def __repr__(self) -> str:
         return f"n4.core.Value(data: {self.data}, grad: {self.grad}, backend: {self._backend}, parent_op: {self.parent_op})"

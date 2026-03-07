@@ -1,4 +1,5 @@
 from n4.core import Value
+from .helpers import new_value
 # uv pip install -e .
 
 
@@ -6,8 +7,8 @@ from n4.core import Value
 def test_simple_add_forward() -> None:
     """Проверяет корректность прямого прохода сложения"""
 
-    a = Value.from_int(2)
-    b = Value.from_int(3)
+    a = new_value(2)
+    b = new_value(3)
 
     c = a + b
 
@@ -17,8 +18,8 @@ def test_simple_add_forward() -> None:
 def test_simple_add_backward() -> None:
     """Проверяет корректность градиентов при сложении"""
 
-    a = Value.from_int(2)
-    b = Value.from_int(3)
+    a = new_value(2)
+    b = new_value(3)
 
     c = a + b
     c.backward()
@@ -33,8 +34,8 @@ def test_simple_add_backward() -> None:
 def test_simple_mul_forward() -> None:
     """Проверяет прямой проход умножения"""
 
-    a = Value.from_int(4)
-    b = Value.from_int(5)
+    a = new_value(4)
+    b = new_value(5)
 
     c = a * b
 
@@ -44,8 +45,8 @@ def test_simple_mul_forward() -> None:
 def test_simple_mul_backward() -> None:
     """Проверяет корректность градиентов при умножении"""
 
-    a = Value.from_int(4)
-    b = Value.from_int(5)
+    a = new_value(4)
+    b = new_value(5)
 
     c = a * b
     c.backward()
@@ -61,9 +62,9 @@ def test_chain_rule_basic() -> None:
     f = (a + b) * c
     """
 
-    a = Value.from_int(2)
-    b = Value.from_int(3)
-    c = Value.from_int(4)
+    a = new_value(2)
+    b = new_value(3)
+    c = new_value(4)
 
     f = (a + b) * c
     f.backward()
@@ -84,7 +85,7 @@ def test_shared_node() -> None:
     f = a * a
     """
 
-    a = Value.from_int(3)
+    a = new_value(3)
     f = a * a
 
     f.backward()
@@ -101,11 +102,11 @@ def test_deep_chain() -> None:
     f = (((a + b) * c) + d) * e
     """
 
-    a = Value.from_int(1)
-    b = Value.from_int(2)
-    c = Value.from_int(3)
-    d = Value.from_int(4)
-    e = Value.from_int(5)
+    a = new_value(1)
+    b = new_value(2)
+    c = new_value(3)
+    d = new_value(4)
+    e = new_value(5)
 
     f = (((a + b) * c) + d) * e
     f.backward()
@@ -129,9 +130,9 @@ def test_used_twice() -> None:
     f = (x+y) + (x*y)
     """
 
-    x = Value.from_int(5)
-    y = Value.from_int(4)
-    z = Value.from_int(8)
+    x = new_value(5)
+    y = new_value(4)
+    z = new_value(8)
 
     z1 = x + y
     z2 = x * z

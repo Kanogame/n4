@@ -1,9 +1,10 @@
 from n4.tensor.tensor import Tensor
 from n4.core import Value
+from .helpers import new_value
 
 
 def test_grad_through_sum() -> None:
-    t = Tensor([Value.from_int(1), Value.from_int(2)], (2,))
+    t = Tensor([new_value(1), new_value(2)], (2,))
 
     s = t.sum()
     s.backward()
@@ -14,12 +15,12 @@ def test_grad_through_sum() -> None:
 
 def test_grad_through_matmul() -> None:
     a = Tensor(
-        [Value.from_int(1), Value.from_int(2), Value.from_int(3), Value.from_int(4)],
+        [new_value(1), new_value(2), new_value(3), new_value(4)],
         (2, 2),
     )
 
     b = Tensor(
-        [Value.from_int(5), Value.from_int(6), Value.from_int(7), Value.from_int(8)],
+        [new_value(5), new_value(6), new_value(7), new_value(8)],
         (2, 2),
     )
 

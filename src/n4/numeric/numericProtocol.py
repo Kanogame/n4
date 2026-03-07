@@ -6,15 +6,7 @@ class NumericProtocol(Protocol):
     """
     Интерфейс для числовых типов, используемых в Value.
     """
-
-    # Ноль
-    @classmethod
-    def zero(cls) -> Self: ...
-
-    # Единица
-    @classmethod
-    def one(cls) -> Self: ...
-
+    
     # Из числа с плавующей точкой
     @classmethod
     def from_float(cls, f: float) -> Self: ...

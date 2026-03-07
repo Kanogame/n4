@@ -1,11 +1,12 @@
 from n4.numeric import PyFloat
 from n4.tensor.tensor import Tensor
 from n4.core import Value
+from .helpers import new_value
 import pytest
 
 
 def test_init_correct_shape() -> None:
-    data = [Value.from_int(i) for i in range(6)]
+    data = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     assert t.shape == (2, 3)
@@ -14,7 +15,7 @@ def test_init_correct_shape() -> None:
 
 
 def test_init_wrong_shape() -> None:
-    data = [Value.from_int(i) for i in range(5)]
+    data = [new_value(i) for i in range(5)]
     with pytest.raises(ValueError):
         Tensor(data, (2, 3))
 
@@ -41,7 +42,7 @@ def test_random_uniform_range() -> None:
 
 
 def test_to_list_2d() -> None:
-    data = [Value.from_int(i) for i in range(6)]
+    data = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     lst = t.to_list()
@@ -51,7 +52,7 @@ def test_to_list_2d() -> None:
 
 
 def test_get_single_element() -> None:
-    data = [Value.from_int(i) for i in range(6)]
+    data = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     res = t[1, 2]
@@ -64,7 +65,7 @@ def test_get_single_element() -> None:
 
 
 def test_get_slice() -> None:
-    data: list[Value[PyFloat]] = [Value.from_int(i) for i in range(6)]
+    data: list[Value[PyFloat]] = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     res = t[1]
@@ -78,7 +79,7 @@ def test_get_slice() -> None:
 
 
 def test_get_out_of_bounds() -> None:
-    data = [Value.from_int(i) for i in range(6)]
+    data = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     with pytest.raises(IndexError):
@@ -86,7 +87,7 @@ def test_get_out_of_bounds() -> None:
 
 
 def test_reshape_valid() -> None:
-    data = [Value.from_int(i) for i in range(6)]
+    data = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     t2 = t.reshape((3, 2))
@@ -96,7 +97,7 @@ def test_reshape_valid() -> None:
 
 
 def test_reshape_invalid() -> None:
-    data = [Value.from_int(i) for i in range(6)]
+    data = [new_value(i) for i in range(6)]
     t = Tensor(data, (2, 3))
 
     with pytest.raises(ValueError):

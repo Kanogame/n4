@@ -91,7 +91,7 @@ class Tensor[T: NumericProtocol]:
         """Создать Тензор заплоненный нулями, размера shape"""
 
         total: int = Tensor.get_total_size(shape)
-        data: list[Value[N]] = [Value(backend.zero()) for _ in range(total)]
+        data: list[Value[N]] = [Value.from_float(0, backend) for _ in range(total)]
         return Tensor(data, shape)
 
     @staticmethod
@@ -101,7 +101,7 @@ class Tensor[T: NumericProtocol]:
         """Создать Тензор заплоненный единицами, размера shape"""
 
         total: int = Tensor.get_total_size(shape)
-        data: list[Value[N]] = [Value(backend.one()) for _ in range(total)]
+        data: list[Value[N]] = [Value.from_float(1, backend) for _ in range(total)]
         return Tensor(data, shape)
 
     @staticmethod
@@ -307,7 +307,7 @@ class Tensor[T: NumericProtocol]:
         for i in range(m):
             for j in range(p):
                 # Dot product of row i of self and column j of other
-                dot: Value[T] = Value(self._backend.zero())
+                dot: Value[T] = Value.from_float(0, self._backend)
                 for k in range(n):
                     dot += self._data[i * n + k] * other._data[k * p + j]
                 result_data.append(dot)
@@ -316,7 +316,7 @@ class Tensor[T: NumericProtocol]:
     def sum(self: Self) -> Value[T]:
         """Сумма всех элементов тензора"""
 
-        total: Value[T] = Value(self._backend.zero())
+        total: Value[T] = Value.from_float(0, self._backend)
         for v in self._data:
             total += v
         return total
@@ -342,7 +342,7 @@ class Tensor[T: NumericProtocol]:
         new_data = []
         for i in range(outer):
             for j in range(stride):
-                s = Value(self._backend.zero())
+                s = Value.from_float(0, self._backend)
                 base = i * self._shape[dim] * stride + j
                 for k in range(self._shape[dim]):
                     s += self._data[base + k * stride]

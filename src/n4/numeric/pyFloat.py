@@ -11,14 +11,6 @@ class PyFloat:
         self.v: float = float(v)
 
     @classmethod
-    def zero(cls) -> Self:
-        return cls(0.0)
-
-    @classmethod
-    def one(cls) -> Self:
-        return cls(1.0)
-
-    @classmethod
     def from_float(cls, f: float) -> Self:
         return cls(f)
 
@@ -26,7 +18,7 @@ class PyFloat:
     def random_uniform(cls, start: float, end: float) -> Self:
         return cls(uniform(start, end))
 
-    def __lt__(self, other: "PyFloat") -> bool:
+    def __lt__(self, other: Self) -> bool:
         return self.v < other.v
 
     def __add__(self, other: "PyFloat") -> "PyFloat":
