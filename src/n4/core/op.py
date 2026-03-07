@@ -1,5 +1,5 @@
 from __future__ import annotations
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Self
 

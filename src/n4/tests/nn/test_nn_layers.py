@@ -1,4 +1,4 @@
-from n4.core.numeric import PyFloat
+from n4.numeric import PyFloat
 from n4.nn.dence_layer import DenseLayer
 from n4.tensor import Tensor
 import pytest

@@ -2,7 +2,7 @@ import operator
 from functools import reduce
 from typing import List, Tuple, Any, Union, Optional, Self
 from n4.core import Value
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 # TODO: sketch, full refactor required
 
 

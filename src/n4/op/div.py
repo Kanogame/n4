@@ -1,5 +1,5 @@
 from typing import Self
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 from n4.core import Op, Value
 
 

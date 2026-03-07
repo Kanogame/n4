@@ -2,7 +2,7 @@ from n4.op import NonOp
 from abc import ABC, abstractmethod
 from typing import Self, Optional
 from n4.core import Value, Op
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 
 
 class NnBase[T: NumericProtocol](ABC):
@@ -24,8 +24,8 @@ class NnBase[T: NumericProtocol](ABC):
     # -> Реализация интерфейса очевидна без explicit передачи типа, да и она не нужна
     # Вот как это делает больной на голову шизофреник (Python+MyPy):
     # - Типов не существует по определению
-    # - Generic в Stdlib но всем насрать, тип T будет провен и inferred только MyPy, Python даже читать не будет
-    # - Тип путь и определят реализацию, но он теряется при компиляции
+    # - Generic в Stdlib но всем насрать, тип T будет проверен и inferred только MyPy, Python даже читать не будет
+    # - Тип пусть и определят реализацию, но он теряется при компиляции, поэтому невозно узнать какой бекенд используется после
     # -> Реализация интерфейса в generic возможна или через dummy (Value, Tensor) или через explicit передачу типа
     # 
     # dummy это совсем кошмар, поэтому берем передачу типа. Как альтернатива - глобальный тип заданный в runtime

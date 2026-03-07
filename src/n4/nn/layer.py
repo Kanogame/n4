@@ -3,7 +3,7 @@ from n4.core import Op, Value
 from typing import Optional, Self
 from abc import ABC, abstractmethod
 from .nn_base import NnBase
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 
 
 class Layer[T: NumericProtocol](NnBase[T], ABC):

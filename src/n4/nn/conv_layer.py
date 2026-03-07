@@ -1,7 +1,7 @@
 from n4.tensor import Tensor
 from n4.core import Op, Value
 from typing import Optional
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 from .layer import Layer
 
 

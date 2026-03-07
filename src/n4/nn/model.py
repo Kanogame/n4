@@ -1,7 +1,7 @@
 from typing import Self
 from n4.tensor import Tensor
 from abc import ABC, abstractmethod
-from n4.core.numeric import NumericProtocol
+from n4.numeric import NumericProtocol
 
 
 class Model[T: NumericProtocol](ABC):
@@ -13,7 +13,7 @@ class Model[T: NumericProtocol](ABC):
         ```
         import n4.nn as nn
         from n4.op import Relu, NonOp
-        from n4.core.numeric import PyFloat
+        from n4.numeric import PyFloat
         from typing import Self
 
 

@@ -1,4 +1,4 @@
-from n4.core.numeric import PyFloat
+from n4.numeric import PyFloat
 from n4.tensor.tensor import Tensor
 from n4.core import Value
 import pytest

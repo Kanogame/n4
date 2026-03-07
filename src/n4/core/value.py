@@ -1,4 +1,4 @@
-from n4.core.numeric import PyFloat, NumericProtocol
+from n4.numeric import PyFloat, NumericProtocol
 from collections import deque
 from typing import Self, Optional
 from .op import Op
