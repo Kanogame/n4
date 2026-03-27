@@ -7,6 +7,8 @@ from .exp import Exp
 from .relu import Relu
 from .nonOp import NonOp
 from .neg import Neg
+from .tanh import Tanh
+from .log import Log
 
 __all__ = [
     "Add",
@@ -18,4 +20,6 @@ __all__ = [
     "Relu",
     "Neg",
     "NonOp",
+    "Tanh",
+    "Log",
 ]

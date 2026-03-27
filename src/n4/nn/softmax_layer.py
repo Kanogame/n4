@@ -30,7 +30,8 @@ class SoftmaxLayer[T: NumericProtocol](Layer[T]):
         for i in range(num_rows):
             # берем из тензора i строку - N
             row_data = x_2d[i]
-            if type(row_data) is not Tensor[T]:
+            # row_data should be a Tensor view of the last dimension; use isinstance check
+            if not isinstance(row_data, Tensor):
                 raise ValueError("Size of tensor is incorrect")
 
             # Вычисляем экспоненты

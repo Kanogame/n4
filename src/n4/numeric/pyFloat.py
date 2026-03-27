@@ -44,5 +44,11 @@ class PyFloat:
     def exp(self) -> "PyFloat":
         return PyFloat(math.exp(self.v))
 
+    def tanh(self) -> "PyFloat":
+        return PyFloat(math.tanh(self.v))
+
+    def log(self) -> "PyFloat":
+        return PyFloat(math.log(self.v))
+
     def __repr__(self) -> str:
         return f"PyFloat({self.v})"

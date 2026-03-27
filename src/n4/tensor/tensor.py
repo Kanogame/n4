@@ -3,7 +3,6 @@ from functools import reduce
 from typing import List, Tuple, Any, Union, Self
 from n4.core import Value, Op
 from n4.numeric import NumericProtocol
-# TODO: sketch, full refactor required
 
 
 class Tensor[T: NumericProtocol]:
@@ -436,9 +435,8 @@ class Tensor[T: NumericProtocol]:
         return summed / factor
 
     def apply_activation(self: Self, activation: type[Op[T]]) -> "Tensor[T]":
-        new_tensor = Tensor(self._data, self.shape)
-
-        for i in range(len(self._data)):
-            new_tensor._data[i] = self._data[i].apply_activation(activation)
-
-        return new_tensor
+        # Create a new data list so we don't mutate the original tensor's values
+        new_data: list[Value[T]] = [
+            self._data[i].apply_activation(activation) for i in range(len(self._data))
+        ]
+        return Tensor(new_data, self.shape)
