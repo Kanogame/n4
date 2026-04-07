@@ -22,6 +22,10 @@ In many ways inspired by PyTorch
 - pytest
 - ruff
 
+TODO:
+- SGD .parameters error
+- bump version
+
 # Roadmap
 ## Stage 1 - n4 (standalone lib)
 Soft deadline 02.28 -> Hard deadline 03.08

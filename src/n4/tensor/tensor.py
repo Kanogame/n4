@@ -286,13 +286,9 @@ class Tensor[T: NumericProtocol]:
         sized_a = [1] * a_offset + list(a)  # например: [1, 1, 4]
         sized_b = [1] * b_offset + list(b)  # например: [3, 1, 4]
 
-        print(sized_a, sized_b)  # отладочный вывод
-
         for i in range(max_n_dim):
             expanded = sized_a[i] == 1 or sized_b[i] == 1  # можно расширить
             identical = sized_a[i] == sized_b[i]  # уже одинаково
-
-            print(expanded, identical)  # отладочный вывод
 
             if not (expanded or identical):
                 raise RuntimeError(

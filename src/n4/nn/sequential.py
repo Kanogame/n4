@@ -51,3 +51,6 @@ class Sequential[T: NumericProtocol](NnBase[T]):
                 return False
 
         return True
+
+    def __call__(self: Self, x: Tensor[T]) -> Tensor[T]:
+        return self.forward_pass(x)
