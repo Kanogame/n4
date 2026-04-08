@@ -20,3 +20,4 @@ class Pow[T: NumericProtocol](Op[T]):
         backendOne: T = a._backend.from_float(1)
 
         a.grad += (b.data * a.data ** (b.data - backendOne)) * out.grad
+        b.grad += (a.data**b.data) * a._backend.log(a.data) * out.grad

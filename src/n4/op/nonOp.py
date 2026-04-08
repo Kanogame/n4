@@ -10,4 +10,5 @@ class NonOp[T: NumericProtocol](Op[T]):
 
     # Так как передали входы, градиенты пройдут напрямую
     def backward_pass(self: Self) -> None:
-        return
+        for inp, out in zip(self.inputs, self.outputs):
+            inp.grad += out.grad

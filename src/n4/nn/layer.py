@@ -1,6 +1,6 @@
 from n4.tensor import Tensor
-from n4.core import Op, Value
-from typing import Optional, Self
+from n4.core import Value
+from typing import Self
 from abc import ABC, abstractmethod
 from .nn_base import NnBase
 from n4.numeric import NumericProtocol

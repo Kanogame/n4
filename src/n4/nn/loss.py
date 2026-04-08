@@ -37,19 +37,14 @@ class CrossEntropyLoss(Loss):
 
     def __call__(self, pred: Tensor[T], target: Tensor[T]) -> Value[T]:
         if pred.shape != target.shape:
-            raise ValueError("pred and target must have the same shape")
+            raise ValueError(
+                f"pred and target must have the same shape, pred: {pred.shape}, target: {target.shape}"
+            )
 
-        # elementwise: - t * log(p)
         log_vals = Tensor([v.apply_activation(Log) for v in pred._data], pred.shape)
         neg_ll = -(target * log_vals)
 
-        # For cross-entropy we want per-sample negative log-likelihood:
-        # sum over last dimension (classes), then mean over samples (rows)
-        if len(neg_ll.shape) < 2:
-            # fallback: already scalar or vector
-            return neg_ll.mean()
-
-        # sum across classes (last dimension) and then mean across rows
+        # Sum over last dimension (classes), then mean over remaining dimensions
         last_dim_idx = neg_ll.ndim - 1
         summed = neg_ll.sum_dim(last_dim_idx)
-        return summed.mean()
+        return summed.mean()  # Works for both 1D and batched inputs

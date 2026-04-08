@@ -59,33 +59,52 @@ class Value[T: NumericProtocol]:
     def get_backend(self: Self) -> type:
         return self._backend
 
+    def collect_graph(self: Self):
+        from .comp_node import CompGraph
+
+        return CompGraph.collect(self)
+
     def backward(self: Self) -> None:
         """
-        Метод возврата по вычисительному графу с подсчетом градиента.
+        Метод возврата по вычисительному графу с подсчетом градиента
 
-        1. Метод задает градиент текущего значений в 1
-        2. Происходит обход графа через dfs
-        3. На каждом из шагов обхода, градиент распространяется сразу
+        1. Происходит сбор топологии, с учетом детей
+        2. Метод задает градиент текущего значений в 1
+        3. Производим распространение
         """
 
-        self.grad = self._backend.from_float(1)
+        # P.S. Reinventing a wheel is always a bad idea
+        # Когда я посмотрел на micrograd я подумал - я могу лучще
+        # И вместо их правильной рекурсивной модели, использовал тупой BFS
+        # И распространял градиент сразу
+        # Подробно в docs/backward.md
 
-        stack = deque[Value[T]]()
-        stack.append(self)
+        # Первый проход: построение топологического порядка
+        topo = []
         visited = set()
+        stack = [(self, False)]  # (node, processed_children_flag)
 
-        while len(stack) != 0:
-            v = stack.popleft()
+        while stack:
+            v, processed = stack.pop()
+            if processed:
+                topo.append(v)
+                continue
             if v in visited:
                 continue
             visited.add(v)
+            # Push node again with processed flag True after its children
+            stack.append((v, True))
+            if v.parent_op is not None:
+                for inp in v.parent_op.inputs:
+                    if inp not in visited:
+                        stack.append((inp, False))
 
+        # Второй проход: установка градиента и обратный проход
+        self.grad = self._backend.from_float(1)
+
+        for v in reversed(topo):
             if v.parent_op is not None:
                 v.parent_op.backward_pass()
-
-                for i in v.parent_op.inputs:
-                    if i not in visited:
-                        stack.appendleft(i)
 
     @staticmethod
     def _forward_pass_operation(op: type[Op[T]], *args: "Value[T]") -> "Value[T]":

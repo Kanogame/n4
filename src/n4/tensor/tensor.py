@@ -123,6 +123,20 @@ class Tensor[T: NumericProtocol]:
         return Tensor(data, shape)
 
     @staticmethod
+    def from_list[N: NumericProtocol](
+        array: list[float | int], shape: Tuple[int, ...], backend: type[N]
+    ) -> "Tensor[N]":
+        """Создать тензор заполненный из массива чисел с нужной формой"""
+
+        if Tensor.get_total_size(shape) != len(array):
+            raise ValueError(
+                "Cannot convert array to tensor with given shape: Sizes dont match"
+            )
+
+        data: list[Value[N]] = [Value.from_float(el, backend) for el in array]
+        return Tensor(data, shape)
+
+    @staticmethod
     def random_uniform[N: NumericProtocol](
         shape: Tuple[int, ...], backend: type[N], low: float = -1.0, high: float = 1.0
     ) -> "Tensor[N]":

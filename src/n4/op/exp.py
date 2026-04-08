@@ -16,7 +16,7 @@ class Exp[T: NumericProtocol](Op[T]):
 
     def backward_pass(self: Self) -> None:
         # Получаем вход и выход
-        (a,) = self.input_count(1)
+        a, *_ = self.input_count(1)
         out, *_ = self.output_count(1)
 
         # Производная exp(x) = exp(x)

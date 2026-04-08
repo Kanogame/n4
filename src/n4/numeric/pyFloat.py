@@ -50,5 +50,8 @@ class PyFloat:
     def log(self) -> "PyFloat":
         return PyFloat(math.log(self.v))
 
+    def sqrt(self) -> "PyFloat":
+        return PyFloat(math.sqrt(self.v))
+
     def __repr__(self) -> str:
         return f"PyFloat({self.v})"

@@ -27,7 +27,12 @@ class Neuron[T: NumericProtocol](NnBase[T]):
     # Функция активации
     activation: type[Op[T]]
 
-    def __init__(self: Self, w_len: int, backend: type[T], activation: Optional[type[Op[T]]] = None):
+    def __init__(
+        self: Self,
+        w_len: int,
+        backend: type[T],
+        activation: Optional[type[Op[T]]] = None,
+    ):
         """
         Инициализация нейрона
 
@@ -43,7 +48,7 @@ class Neuron[T: NumericProtocol](NnBase[T]):
         self.w = Tensor.random_uniform(
             (w_len,), low=-1.0, high=1.0, backend=self._backend
         )
-        self.b = Value.from_float(0, self._backend)
+        self.b = Value.from_float(1, self._backend)
 
         self.activation = self.resolve_activation(activation)
 

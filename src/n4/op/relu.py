@@ -21,5 +21,5 @@ class Relu[T: NumericProtocol](Op[T]):
 
         backendZero: T = a._backend.from_float(0)
 
-        if out.data > backendZero:
+        if a.data > backendZero:
             a.grad += out.grad
