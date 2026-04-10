@@ -7,7 +7,7 @@ from .optimizer import Optimizer
 
 class Adam[T: NumericProtocol](Optimizer[T]):
     """
-    Adam optimizer with adaptive learning rates.
+    Оптимизатор Adam
 
     Аргументы:
         params: Iterable[Value[T]] -- список параметров для обновления
@@ -95,7 +95,3 @@ class Adam[T: NumericProtocol](Optimizer[T]):
             # Update: p = p - lr * m_hat / (sqrt(v_hat) + eps)
             # Note: requires sqrt() method on backend
             p.data = p.data - (lr_val * m_hat) / (v_hat.sqrt() + eps_val)
-
-    def zero_grad(self) -> None:
-        for p in self.params:
-            p.zero_grad()

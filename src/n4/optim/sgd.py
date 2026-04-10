@@ -38,13 +38,8 @@ class SGD[T: NumericProtocol](Optimizer[T]):
                 raise ValueError("All parameters must share the same numeric backend")
 
     def step(self) -> None:
-        """Apply one optimization step: p.data = p.data - lr * p.grad"""
 
         lr_val = self._backend.from_float(self.lr)
 
         for p in self.params:
             p.data = p.data - (p.grad * lr_val)
-
-    def zero_grad(self) -> None:
-        for p in self.params:
-            p.zero_grad()

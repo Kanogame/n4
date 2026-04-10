@@ -5,9 +5,11 @@ from typing import Optional, Self
 
 
 class Optimizer[T: NumericProtocol](ABC):
-    """Abstract optimizer base class.
+    """
+    Абстрактный класс оптимизатора
 
-    Subclasses must implement `step()` and `zero_grad()`.
+    Все подклассы дожны имплементировать step, используя
+    class-wide ссылку на параметры - self.params
     """
 
     params: list[Value[T]]
@@ -17,6 +19,3 @@ class Optimizer[T: NumericProtocol](ABC):
 
     @abstractmethod
     def step(self: Self) -> None: ...
-
-    @abstractmethod
-    def zero_grad(self: Self) -> None: ...
