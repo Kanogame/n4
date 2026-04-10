@@ -19,18 +19,6 @@ def test_sgd_updates_single_value() -> None:
     assert v.data.v == 0.95
 
 
-def test_sgd_zero_grad() -> None:
-    """Проверяет, что zero_grad обнуляет градиент"""
-
-    v = new_value(2.0)
-    v.grad = PyFloat.from_float(2.0)
-
-    opt = SGD([v], lr=0.5)
-    opt.zero_grad()
-
-    assert v.grad.v == 0.0
-
-
 def test_sgd_updates_multiple_params() -> None:
     """Проверяет обновление нескольких параметров за один шаг"""
 

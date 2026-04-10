@@ -3,7 +3,7 @@ from n4.tensor import Tensor
 from n4.core import Value
 from n4.nn.dence_layer import DenseLayer
 from n4.nn.sequential import Sequential
-from n4.loss.loss import MSELoss
+from n4.loss import MSELoss
 from n4.optim.sgd import SGD
 from typing import Sequence, Tuple, cast
 
