@@ -1,12 +1,11 @@
 from n4.numeric import NumericProtocol
-from collections import deque
 from typing import Self, Optional
 from .op import Op
 
 
 class Value[T: NumericProtocol]:
     """
-    Класс отражающий одно значение тензона, ожидает в качестве типа self некий класс, поддерживающий базовые операции согластно numericProtocol
+    Класс отражающий одно значение тензона, ожидает в качестве типа self некий класс, поддерживающий базовые операции согластно NumericProtocol
     """
 
     data: T
@@ -76,7 +75,7 @@ class Value[T: NumericProtocol]:
         # P.S. Reinventing a wheel is always a bad idea
         # Когда я посмотрел на micrograd я подумал - я могу лучще
         # И вместо их правильной рекурсивной модели, использовал тупой BFS
-        # И распространял градиент сразу
+        # И распространял градиент сразу - что было тупостью :)
         # Подробно в docs/backward.md
 
         # Первый проход: построение топологического порядка
@@ -92,7 +91,6 @@ class Value[T: NumericProtocol]:
             if v in visited:
                 continue
             visited.add(v)
-            # Push node again with processed flag True after its children
             stack.append((v, True))
             if v.parent_op is not None:
                 for inp in v.parent_op.inputs:

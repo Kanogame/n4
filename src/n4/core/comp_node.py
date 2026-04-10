@@ -1,20 +1,31 @@
-from typing import Self
+from typing import Self, Any
 from collections import deque
 
-from n4.numeric import numericProtocol
+from n4.numeric import NumericProtocol
 from n4.core import Value, Op
 
-from graphviz import Digraph
 
+class CompGraph[T: NumericProtocol]:
+    """
+    Вычислительный граф
 
-class CompGraph[T: numericProtocol]:
+    Узлы = операции
+    Связи = op.inputs/op.outputs = Value
+    """
+
     nodes: list[Op[T]]
 
     def __init__(self: Self, operations: list[Op[T]]):
         self.nodes = operations
 
     @staticmethod
-    def collect[N: numericProtocol](last_value: Value[N]) -> "CompGraph[N]":
+    def collect[N: NumericProtocol](last_value: Value[N]) -> "CompGraph[N]":
+        """
+        Factory метод сбора графа
+
+        Сборка вычислительного графа путем простого bfs
+        """
+
         ops: list[Op[N]] = []
         stack = deque[Value[N]]()
         stack.append(last_value)
@@ -34,34 +45,42 @@ class CompGraph[T: numericProtocol]:
 
         return CompGraph[N](ops)
 
-    def to_graphviz(
-        self: Self, filename: str = "comp_graph", format: str = "pdf", view: bool = True
-    ) -> Digraph:
-        """
-        Export computational graph to Graphviz format.
+    def export_graphviz(self: Self) -> Any:
+        from graphviz import Digraph
 
-        Args:
-            filename: Output file name (without extension)
-            format: Output format (pdf, png, svg, etc.)
-            view: Whether to automatically open the rendered graph
-
-        Returns:
-            Graphviz Digraph object
         """
-        graph = Digraph(comment="Computational Graph", format=format)
+        Метод сбора graphviz DiGraph
+
+        Формирует граф по логике:
+        OP остаются узлами
+        Value становятся узлами с другим форматированием
+
+        Возвращает Digraph - но в typehint указан Any, так как это опциональная зависимость 
+        """
+        graph = Digraph(comment="N4 Computational graph dump")
         graph.attr(rankdir="TB")
         graph.attr("node", shape="box", style="rounded")
 
         graph.attr(splines="ortho")
         graph.attr(sep="+0.5")
 
-        # Track all values we've seen to avoid duplicates
+        # Храним все прошедние значения для исключения повторов и циклов
         value_ids = {}
+
+        # Нумеруем узлы для более информативного графа
         value_counter = 0
 
-        # Add nodes for operations
-        for op_idx, op in enumerate(self.nodes):
-            op_name = op.__class__.__name__
+        def form_value_node(input_val: Value[T]):
+            graph.node(
+                val_name,
+                label=f"Value\ndata: {input_val.data}\ngrad: {input_val.grad}",
+                shape="box",
+                style="filled",
+                fillcolor="lightgreen",
+            )
+
+        def form_op_node(op_val: Op[T], op_idx: int):
+            op_name = op_val.__class__.__name__
             graph.node(
                 f"op_{op_idx}",
                 label=f"{op_name}\n(Op {op_idx})",
@@ -70,44 +89,30 @@ class CompGraph[T: numericProtocol]:
                 fillcolor="lightblue",
             )
 
-            # Add input value nodes and edges
+        for op_idx, op in enumerate(self.nodes):
+            # Добавляем операцию
+            form_op_node(op, op_idx)
+
+            # добавляем все входы
             for input_idx, input_val in enumerate(op.inputs):
                 val_id = id(input_val)
+                val_name = value_ids[val_id]
                 if val_id not in value_ids:
                     value_ids[val_id] = f"val_{value_counter}"
                     value_counter += 1
-                    val_name = value_ids[val_id]
-                    graph.node(
-                        val_name,
-                        label=f"Value\ndata: {input_val.data}\ngrad: {input_val.grad}",
-                        shape="box",
-                        style="filled",
-                        fillcolor="lightgreen",
-                    )
-                else:
-                    val_name = value_ids[val_id]
+                    form_value_node(input_val)
 
                 graph.edge(val_name, f"op_{op_idx}", label=f"input[{input_idx}]")
 
-            # Add output value nodes and edges
+            # добавляем все выходы
             for output_idx, output_val in enumerate(op.outputs):
                 val_id = id(output_val)
+                val_name = value_ids[val_id]
                 if val_id not in value_ids:
                     value_ids[val_id] = f"val_{value_counter}"
                     value_counter += 1
-                    val_name = value_ids[val_id]
-                    graph.node(
-                        val_name,
-                        label=f"Value\ndata: {output_val.data}\ngrad: {output_val.grad}",
-                        shape="box",
-                        style="filled",
-                        fillcolor="lightcoral",
-                    )
-                else:
-                    val_name = value_ids[val_id]
+                    form_value_node(output_val)
 
                 graph.edge(f"op_{op_idx}", val_name, label=f"output[{output_idx}]")
 
-        # Render and save
-        graph.render(filename, view=view, cleanup=False)
         return graph
