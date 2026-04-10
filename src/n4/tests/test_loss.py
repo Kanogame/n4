@@ -4,7 +4,7 @@ import math
 from n4.numeric import PyFloat
 from n4.tensor import Tensor
 from n4.core import Value
-from n4.nn.loss import MSELoss, CrossEntropyLoss
+from n4.loss.loss import MSELoss, CrossEntropyLoss
 
 
 def make_tensor(vals: Sequence[float], shape: Tuple[int, ...]) -> Tensor[PyFloat]:

@@ -5,7 +5,7 @@ from n4.core import Value
 from n4.nn.dence_layer import DenseLayer
 from n4.nn.softmax_layer import SoftmaxLayer
 from n4.nn.sequential import Sequential
-from n4.nn.loss import CrossEntropyLoss
+from n4.loss.loss import CrossEntropyLoss
 from n4.optim.sgd import SGD
 
 
