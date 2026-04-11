@@ -1,6 +1,6 @@
 from n4.tensor import Tensor
 from n4.core import Op, Value
-from typing import Optional
+from typing import Optional, Self
 from n4.numeric import NumericProtocol
 from .layer import Layer
 
@@ -9,7 +9,7 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
     """2d Сверточный слой на нейронах"""
 
     def __init__(
-        self,
+        self: Self,
         in_channels: int,
         out_channels: int,
         kernel_size: int,
@@ -50,7 +50,7 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
 
         self.activation = self.resolve_activation(activation)
 
-    def _pad(self, x: Tensor[T]) -> Tensor[T]:
+    def _pad(self: Self, x: Tensor[T]) -> Tensor[T]:
         """
         Заполнить тензор нулями согластно паддингу
 
@@ -71,7 +71,7 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
                     padded[ci, i + self.padding, j + self.padding] = x[ci, i, j]
         return padded
 
-    def _im2col(self, x: Tensor[T]) -> Tensor[T]:
+    def _im2col(self: Self, x: Tensor[T]) -> Tensor[T]:
         """
         Превращает 3д тензор (C, H, W) в 2d матрицу
 
@@ -146,5 +146,8 @@ class ConvLayer[T: NumericProtocol](Layer[T]):
 
         return out_mat.Transposed.reshape((self.out_channels, h_out, w_out))
 
-    def parameters(self) -> list[Value[T]]:
+    def parameters(self: Self) -> list[Value[T]]:
         return self.weights._data + self.bias._data
+
+    def neuron_count(self: Self) -> Optional[int]:
+        return self.out_channels

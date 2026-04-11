@@ -1,3 +1,4 @@
+from typing import Optional, Self
 from n4.core import Value
 from n4.tensor import Tensor
 from n4.numeric import NumericProtocol
@@ -49,5 +50,11 @@ class SoftmaxLayer[T: NumericProtocol](Layer[T]):
         # Восстанавливаем исходную форму
         return Tensor[T](result_data, x.shape)
 
-    def parameters(self) -> list[Value[T]]:
+    def parameters(self: Self) -> list[Value[T]]:
         return []
+
+    def neuron_count(self: Self) -> Optional[int]:
+        """
+        Количество нейронов в слое
+        """
+        return None

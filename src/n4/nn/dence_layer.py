@@ -2,7 +2,7 @@ from n4.numeric import NumericProtocol
 from n4.tensor import Tensor
 from n4.core import Op, Value
 from .layer import Layer
-from typing import Optional
+from typing import Optional, Self
 
 
 class DenseLayer[T: NumericProtocol](Layer[T]):
@@ -82,5 +82,8 @@ class DenseLayer[T: NumericProtocol](Layer[T]):
             self.activation
         )
 
-    def parameters(self) -> list[Value[T]]:
+    def parameters(self: Self) -> list[Value[T]]:
         return self.weights._data + self.bias._data
+
+    def neuron_count(self: Self) -> Optional[int]:
+        return self.out_features

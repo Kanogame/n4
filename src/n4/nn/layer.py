@@ -1,6 +1,6 @@
 from n4.tensor import Tensor
 from n4.core import Value
-from typing import Self
+from typing import Self, Optional
 from abc import ABC, abstractmethod
 from .nn_base import NnBase
 from n4.numeric import NumericProtocol
@@ -27,4 +27,11 @@ class Layer[T: NumericProtocol](NnBase[T], ABC):
     @abstractmethod
     def parameters(self: Self) -> list[Value[T]]:
         """Все параметры слоя, должен быть реализован подклассами"""
+        pass
+
+    @abstractmethod
+    def neuron_count(self: Self) -> Optional[int]:
+        """
+        Количество нейронов в слое
+        """
         pass
