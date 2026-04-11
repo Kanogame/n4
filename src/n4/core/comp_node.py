@@ -70,7 +70,7 @@ class CompGraph[T: NumericProtocol]:
         # Нумеруем узлы для более информативного графа
         value_counter = 0
 
-        def form_value_node(input_val: Value[T]):
+        def form_value_node(val_name: str, input_val: Value[T]) -> None:
             graph.node(
                 val_name,
                 label=f"Value\ndata: {input_val.data}\ngrad: {input_val.grad}",
@@ -79,7 +79,7 @@ class CompGraph[T: NumericProtocol]:
                 fillcolor="lightgreen",
             )
 
-        def form_op_node(op_val: Op[T], op_idx: int):
+        def form_op_node(op_val: Op[T], op_idx: int) -> None:
             op_name = op_val.__class__.__name__
             graph.node(
                 f"op_{op_idx}",
@@ -96,23 +96,25 @@ class CompGraph[T: NumericProtocol]:
             # добавляем все входы
             for input_idx, input_val in enumerate(op.inputs):
                 val_id = id(input_val)
-                val_name = value_ids[val_id]
                 if val_id not in value_ids:
                     value_ids[val_id] = f"val_{value_counter}"
                     value_counter += 1
-                    form_value_node(input_val)
+                    val_name = value_ids[val_id]
+                    form_value_node(val_name, input_val)
 
+                val_name = value_ids[val_id]
                 graph.edge(val_name, f"op_{op_idx}", label=f"input[{input_idx}]")
 
             # добавляем все выходы
             for output_idx, output_val in enumerate(op.outputs):
                 val_id = id(output_val)
-                val_name = value_ids[val_id]
                 if val_id not in value_ids:
                     value_ids[val_id] = f"val_{value_counter}"
                     value_counter += 1
-                    form_value_node(output_val)
+                    val_name = value_ids[val_id]
+                    form_value_node(val_name, output_val)
 
+                val_name = value_ids[val_id]
                 graph.edge(f"op_{op_idx}", val_name, label=f"output[{output_idx}]")
 
         return graph
