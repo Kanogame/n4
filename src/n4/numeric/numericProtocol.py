@@ -15,6 +15,8 @@ class NumericProtocol(Protocol):
     @classmethod
     def random_uniform(cls, start: float, end: float) -> Self: ...
 
+    def get_float(self: Self) -> float: ...
+
     # Перегрузки операторов
 
     # <

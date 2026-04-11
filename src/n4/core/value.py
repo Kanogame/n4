@@ -1,5 +1,5 @@
 from n4.numeric import NumericProtocol
-from typing import Self, Optional
+from typing import Self, Optional, Any, Tuple
 from .op import Op
 
 
@@ -58,7 +58,10 @@ class Value[T: NumericProtocol]:
     def get_backend(self: Self) -> type:
         return self._backend
 
-    def collect_graph(self: Self):
+    def get_float(self: Self) -> float:
+        return self.data.get_float()
+
+    def collect_graph(self: Self) -> Any:
         from .comp_node import CompGraph
 
         return CompGraph.collect(self)
@@ -81,7 +84,9 @@ class Value[T: NumericProtocol]:
         # Первый проход: построение топологического порядка
         topo = []
         visited = set()
-        stack = [(self, False)]  # (node, processed_children_flag)
+        stack: list[Tuple[Value[T], bool]] = [
+            (self, False)
+        ]  # (node, processed_children_flag)
 
         while stack:
             v, processed = stack.pop()

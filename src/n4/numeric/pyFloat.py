@@ -3,7 +3,6 @@ from typing import Self
 from random import uniform
 
 
-# TODO: as example of multiple backends, implement decimal
 class PyFloat:
     """
     Реализация NumericProtocol для python float.
@@ -19,6 +18,9 @@ class PyFloat:
     @classmethod
     def random_uniform(cls, start: float, end: float) -> Self:
         return cls(uniform(start, end))
+
+    def get_float(self: Self) -> float:
+        return self.v
 
     def __lt__(self, other: Self) -> bool:
         return self.v < other.v
