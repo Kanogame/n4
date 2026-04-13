@@ -282,14 +282,19 @@ class Tensor[T: NumericProtocol]:
     def _broadcast_get_compatible_dims(
         a: Tuple[int, ...], b: Tuple[int, ...]
     ) -> Tuple[Tuple[int, ...], Tuple[int, ...]]:
-        """Проверяет можно ли при помощи паддинга из нулей привести тензоры к одной форме
+        """Вычисляет совместимые размеры для broadcasting.
+
+        Применяет правила NumPy broadcasting:
+        1. Выравнивает количество измерений, добавляя 1s в начало
+        2. Результирующее измерение = max(a[i], b[i]) если хотя бы одно из них = 1
 
         Пример:
-            a.shape = (1, 4)
-            b.shape = (3, 1, 4)
+            a.shape = (3,)
+            b.shape = (2, 3)
 
-        После приведения обе формы становятся одинаковыми:
-            (1, 1, 4)  и  (3, 1, 4)
+        После приведения:
+            a -> (1, 3) -> (2, 3)
+            b -> (2, 3) -> (2, 3)
         """
 
         max_n_dim = max(len(a), len(b))
@@ -297,36 +302,118 @@ class Tensor[T: NumericProtocol]:
         a_offset = max_n_dim - len(a)
         b_offset = max_n_dim - len(b)
 
-        sized_a = [1] * a_offset + list(a)  # например: [1, 1, 4]
-        sized_b = [1] * b_offset + list(b)  # например: [3, 1, 4]
+        sized_a = [1] * a_offset + list(a)
+        sized_b = [1] * b_offset + list(b)
+
+        # Вычисляем итоговую форму для broadcasting
+        result_a = []
+        result_b = []
 
         for i in range(max_n_dim):
-            expanded = sized_a[i] == 1 or sized_b[i] == 1  # можно расширить
-            identical = sized_a[i] == sized_b[i]  # уже одинаково
+            dim_a = sized_a[i]
+            dim_b = sized_b[i]
 
-            if not (expanded or identical):
+            if dim_a == dim_b:
+                result_a.append(dim_a)
+                result_b.append(dim_b)
+            elif dim_a == 1:
+                result_a.append(dim_b)
+                result_b.append(dim_b)
+            elif dim_b == 1:
+                result_a.append(dim_a)
+                result_b.append(dim_a)
+            else:
                 raise RuntimeError(
                     f"Tensors with shapes {a} and {b} cannot be broadcasted"
                 )
 
-        return (tuple(sized_a), tuple(sized_b))
+        return (tuple(result_a), tuple(result_b))
 
     def _broadcast_to(self: Self, target_shape: Tuple[int, ...]) -> "Tensor[T]":
-        """Преобразует Тензор в указанную форму"""
+        """Преобразует Тензор в указанную форму путем повторения элементов.
+
+        Поддерживает NumPy-подобный broadcasting: если текущая форма совпадает с target_shape,
+        возвращает self. Иначе повторяет элементы вдоль размерностей размером 1.
+
+        Также поддерживает добавление измерений размером 1 в начало (для выравнивания ndim).
+        """
 
         if self.shape == target_shape:
             return self
 
-        cur_size = self.get_total_size(self.shape)
-        target_size = self.get_total_size(self.shape)
+        # Если нужно добавить измерения в начало
+        if len(self.shape) < len(target_shape):
+            # Добавляем измерения размером 1 в начало
+            new_shape = (1,) * (len(target_shape) - len(self.shape)) + self.shape
+            if new_shape != target_shape:
+                # Теперь рекурсивно вызываем с расширенной формой
+                padded_tensor = self.reshape(new_shape)
+                return padded_tensor._broadcast_to(target_shape)
+            else:
+                # Уже правильная форма после padding
+                return self.reshape(new_shape)
 
-        if cur_size != target_size:
+        if len(self.shape) > len(target_shape):
             raise ValueError(
-                f"Cannot reshape tensor of shape {self.shape} to shape {target_shape}: "
-                f"the total number of elements must match."
+                f"Cannot broadcast tensor of shape {self.shape} to shape {target_shape}: "
+                f"cannot reduce dimensions"
             )
 
-        return self.reshape(target_shape)
+        # Теперь len(self.shape) == len(target_shape)
+        # Проверяем, что каждое измерение либо совпадает, либо текущее измерение = 1
+        for i, (cur_dim, tgt_dim) in enumerate(zip(self.shape, target_shape)):
+            if cur_dim != tgt_dim and cur_dim != 1:
+                raise ValueError(
+                    f"Cannot broadcast tensor of shape {self.shape} to shape {target_shape}: "
+                    f"dimension {i} mismatch ({cur_dim} vs {tgt_dim})"
+                )
+
+        # Если уже нужная форма, вернуть self
+        if self.shape == target_shape:
+            return self
+
+        # Расширяем данные, повторяя элементы вдоль размерностей размером 1
+        new_data: list[Value[T]] = []
+
+        # Вычисляем шаги для итерации по текущему тензору
+        strides: list[int] = []
+        stride = 1
+        for dim in reversed(self.shape):
+            strides.insert(0, stride)
+            stride *= dim
+
+        target_strides: list[int] = []
+        stride = 1
+        for dim in reversed(target_shape):
+            target_strides.insert(0, stride)
+            stride *= dim
+
+        # Для каждого индекса в target_shape, находим соответствующий индекс в self
+        target_size = self.get_total_size(target_shape)
+        for flat_idx in range(target_size):
+            # Преобразуем flat_idx в многомерный индекс target_shape
+            target_idx: list[int] = []
+            remaining = flat_idx
+            for stride in target_strides:
+                target_idx.append(remaining // stride)
+                remaining %= stride
+
+            # Для каждого измерения с размером 1 в текущей форме, используем индекс 0
+            self_idx: list[int] = []
+            for i, (cur_dim, tgt_idx) in enumerate(zip(self.shape, target_idx)):
+                if cur_dim == 1:
+                    self_idx.append(0)
+                else:
+                    self_idx.append(tgt_idx)
+
+            # Вычисляем flat индекс в текущем тензоре
+            self_flat_idx = 0
+            for stride, idx in zip(strides, self_idx):
+                self_flat_idx += idx * stride
+
+            new_data.append(self._data[self_flat_idx])
+
+        return Tensor(new_data, target_shape)
 
     def __add__(self: Self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
         """Поэлементное суммирование"""
@@ -335,8 +422,9 @@ class Tensor[T: NumericProtocol]:
             new_data = [x + other for x in self._data]
             return Tensor(new_data, self._shape)
 
-        new_data = [x + y for x, y in self._broadcast_both_tensors_zip(self, other)]
-        return Tensor(new_data, self._shape)
+        new_a, new_b = self._broadcast_both_tensors(self, other)
+        new_data = [x + y for x, y in zip(new_a._data, new_b._data)]
+        return Tensor(new_data, new_a._shape)
 
     def __sub__(self: Self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
         """Поэлементное вычитание"""
@@ -345,8 +433,9 @@ class Tensor[T: NumericProtocol]:
             new_data = [x - other for x in self._data]
             return Tensor(new_data, self._shape)
 
-        new_data = [x - y for x, y in self._broadcast_both_tensors_zip(self, other)]
-        return Tensor(new_data, self._shape)
+        new_a, new_b = self._broadcast_both_tensors(self, other)
+        new_data = [x - y for x, y in zip(new_a._data, new_b._data)]
+        return Tensor(new_data, new_a._shape)
 
     def __mul__(self: Self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
         """Поэлементное умножение"""
@@ -355,8 +444,9 @@ class Tensor[T: NumericProtocol]:
             new_data = [x * other for x in self._data]
             return Tensor(new_data, self._shape)
 
-        new_data = [x * y for x, y in self._broadcast_both_tensors_zip(self, other)]
-        return Tensor(new_data, self._shape)
+        new_a, new_b = self._broadcast_both_tensors(self, other)
+        new_data = [x * y for x, y in zip(new_a._data, new_b._data)]
+        return Tensor(new_data, new_a._shape)
 
     def __truediv__(self: Self, other: Union["Tensor[T]", Value[T]]) -> "Tensor[T]":
         """Поэлементное деление"""
@@ -365,8 +455,9 @@ class Tensor[T: NumericProtocol]:
             new_data = [x / other for x in self._data]
             return Tensor(new_data, self._shape)
 
-        new_data = [x / y for x, y in self._broadcast_both_tensors_zip(self, other)]
-        return Tensor(new_data, self._shape)
+        new_a, new_b = self._broadcast_both_tensors(self, other)
+        new_data = [x / y for x, y in zip(new_a._data, new_b._data)]
+        return Tensor(new_data, new_a._shape)
 
     def __neg__(self: Self) -> "Tensor[T]":
         new_data = [-x for x in self._data]

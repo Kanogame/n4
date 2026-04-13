@@ -120,3 +120,69 @@ def test_mean_dim() -> None:
 
     assert m._data[0].data.v == 3
     assert m._data[1].data.v == 5
+
+
+def test_broadcast_1d_to_2d() -> None:
+    """Test broadcasting (3,) tensor to (2, 3) by adding a dimension at the beginning"""
+    a = Tensor([new_value(1), new_value(2), new_value(3)], (3,))
+    b = Tensor(
+        [
+            new_value(10),
+            new_value(20),
+            new_value(30),
+            new_value(10),
+            new_value(20),
+            new_value(30),
+        ],
+        (2, 3),
+    )
+
+    # a should be broadcast to (1, 3) -> (2, 3)
+    c = a + b
+
+    assert c.shape == (2, 3)
+    assert c._data[0].data.v == 11  # 1 + 10
+    assert c._data[1].data.v == 22  # 2 + 20
+    assert c._data[2].data.v == 33  # 3 + 30
+    assert c._data[3].data.v == 11  # 1 + 10
+    assert c._data[4].data.v == 22  # 2 + 20
+    assert c._data[5].data.v == 33  # 3 + 30
+
+
+def test_broadcast_scalar_dims() -> None:
+    """Test broadcasting (1, 3) tensor to (2, 3) by repeating the single row"""
+    a = Tensor([new_value(1), new_value(2), new_value(3)], (1, 3))
+    b = Tensor(
+        [
+            new_value(10),
+            new_value(20),
+            new_value(30),
+            new_value(40),
+            new_value(50),
+            new_value(60),
+        ],
+        (2, 3),
+    )
+
+    c = a + b
+
+    assert c.shape == (2, 3)
+    assert c._data[0].data.v == 11  # 1 + 10
+    assert c._data[1].data.v == 22  # 2 + 20
+    assert c._data[2].data.v == 33  # 3 + 30
+    assert c._data[3].data.v == 41  # 1 + 40
+    assert c._data[4].data.v == 52  # 2 + 50
+    assert c._data[5].data.v == 63  # 3 + 60
+
+
+def test_broadcast_with_scalar_value() -> None:
+    """Test broadcasting a Value scalar across a tensor"""
+    a = Tensor([new_value(1), new_value(2), new_value(3)], (3,))
+    s = new_value(5)
+
+    c = a + s
+
+    assert c.shape == (3,)
+    assert c._data[0].data.v == 6
+    assert c._data[1].data.v == 7
+    assert c._data[2].data.v == 8
