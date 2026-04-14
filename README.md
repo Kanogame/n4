@@ -26,6 +26,11 @@ TODO:
 - SGD .parameters error
 - bump version
 
+# OPTIMIZATION OF COMP GRAPH
+Your goal is: optimizing graph structure, for faster rendering
+Graph is very detailed, has a lot of useless text, that slows generation dramatically, reduce the overhead. Display only necessary info
+
+
 # Roadmap
 ## Stage 1 - n4 (standalone lib)
 Soft deadline 02.28 -> Hard deadline 03.08

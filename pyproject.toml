@@ -1,6 +1,6 @@
 [project]
 name = "n4"
-version = "0.4.0"
+version = "0.4.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -8,6 +8,7 @@ dependencies = [
     "ruff>=0.15.1",
     "pytest>=9.0.2",
     "graphviz>=0.21",
+    "pytest-cov>=7.1.0",
 ]
 
 [dependency-groups]

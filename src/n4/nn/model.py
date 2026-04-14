@@ -6,7 +6,7 @@ from n4.numeric import NumericProtocol
 from n4.nn.nn_base import NnBase
 
 
-class Model[T: NumericProtocol](NnBase, ABC):
+class Model[T: NumericProtocol](NnBase[T], ABC):
     """
     Базовый класс для всех моделей построенных на n4
 
