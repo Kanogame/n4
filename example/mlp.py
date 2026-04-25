@@ -47,4 +47,4 @@ for i in range(200):
     print(f"loss: {loss.data}")
 
 
-print(preds[0][0].data, preds[0][1].data, preds[0][2].data)
+print(preds[0][0].data, preds[0][1].data, preds[0][2].data)  # type: ignore[index,union-attr,not-subscriptable,unresolved-attribute]

@@ -58,8 +58,7 @@ def test_get_single_element() -> None:
     res = t[1, 2]
     assert type(res) is Value
 
-    v: Value[PyFloat] = res
-
+    v: Value[PyFloat] = res  # type: ignore
     assert isinstance(v, Value)
     assert v.data.v == 5.0
 
@@ -71,7 +70,7 @@ def test_get_slice() -> None:
     res = t[1]
     assert type(res) is Tensor
 
-    row: Tensor[PyFloat] = res
+    row: Tensor[PyFloat] = res  # type: ignore
 
     assert isinstance(row, Tensor)
     assert row.shape == (3,)

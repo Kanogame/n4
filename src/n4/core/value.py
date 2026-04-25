@@ -55,7 +55,7 @@ class Value[T: NumericProtocol]:
 
         return Value(backend.from_float(value))
 
-    def get_backend(self: Self) -> type:
+    def get_backend(self: Self) -> type[T]:
         return self._backend
 
     def get_float(self: Self) -> float:

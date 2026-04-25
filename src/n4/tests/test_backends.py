@@ -152,4 +152,4 @@ def test_backends_cannot_mix() -> None:
     a = Value.from_float(1.0, PyFloat)
     b = Value.from_float(1.0, DecimalNum)
     with pytest.raises(TypeError):
-        _ = a + b  # type: ignore[operator]
+        _ = a + b  # type: ignore
