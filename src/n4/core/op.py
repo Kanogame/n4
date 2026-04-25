@@ -1,7 +1,7 @@
 from __future__ import annotations
 from n4.numeric import NumericProtocol
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Self
+from typing import Self, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .value import Value
@@ -59,7 +59,7 @@ class Op[T: NumericProtocol](ABC):
     @staticmethod
     def _count_args(args: list[Value[T]], desired_size: int) -> list[Value[T]]:
         if len(args) != desired_size:
-            raise TypeError("Received incorrent number of arguments")
+            raise TypeError("Received incorrect number of arguments")
 
         return args[:desired_size]
 

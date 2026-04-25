@@ -50,7 +50,7 @@ class Value[T: NumericProtocol]:
         cls, value: float, backend: type[N]
     ) -> "Value[N]":
         """
-        Создание Value с бекендом backend из int.
+        Создание Value с бекендом backend из float.
         """
 
         return Value(backend.from_float(value))
@@ -184,4 +184,8 @@ class Value[T: NumericProtocol]:
         return self._forward_pass_operation(activation, self)
 
     def __repr__(self) -> str:
-        return f"n4.core.Value(data: {self.data}, grad: {self.grad}, backend: {self._backend}, parent_op: {self.parent_op})"
+        op_name = type(self.parent_op).__name__ if self.parent_op is not None else "None"
+        return f"Value(data={self.data}, grad={self.grad}, op={op_name})"
+
+    def __str__(self) -> str:
+        return f"Value({self.data})"

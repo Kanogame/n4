@@ -9,6 +9,8 @@ dependencies = [
     "pytest>=9.0.2",
     "graphviz>=0.21",
     "pytest-cov>=7.1.0",
+    "numpy>=1.26",
+    "ty>=0.0.32",
 ]
 
 [dependency-groups]

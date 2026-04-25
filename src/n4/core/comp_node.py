@@ -46,8 +46,6 @@ class CompGraph[T: NumericProtocol]:
         return CompGraph[N](ops)
 
     def export_graphviz(self: Self) -> Any:
-        from graphviz import Digraph
-
         """
         Метод сбора graphviz DiGraph (оптимизирован для скорости)
 
@@ -58,6 +56,7 @@ class CompGraph[T: NumericProtocol]:
 
         Возвращает Digraph - но в typehint указан Any, так как это опциональная зависимость
         """
+        from graphviz import Digraph  # type: ignore[import-untyped]
         graph = Digraph(comment="N4 Computational graph dump (fast)")
         graph.attr(rankdir="TB")
 
