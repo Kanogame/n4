@@ -1,6 +1,6 @@
 [project]
 name = "n4"
-version = "0.4.2"
+version = "0.5.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -21,3 +21,9 @@ dev = [
 
 [tool.mypy]
 strict = true
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+]
