@@ -1,170 +1,72 @@
-# What is n4
-n4 stands for NNNN, which stands for NaNo Neural Network.
+# n4
 
-This is simplistic OOP NN framework written in python.
+n4 это NaNo Neural Network, маленький фреймворк для нейросетей на чистом Python со своим автоградом. Всё считается на скалярах: есть Value, вокруг него строится вычислительный граф, поверх лежат тензоры, слои, функции потерь и оптимизаторы. По духу это PyTorch, только сильно проще и без единой строчки C.
 
-In many ways inspired by PyTorch
+Библиотека учебная, писалась чтобы разобраться как автоград работает изнутри, а не чтобы быстро обучать модели.
 
-# Rough project layout
-- autograd
-  - autodifferentiation system and computation graph constructor
-- optim
-  - SGD
-- nn
-  - layers
-  - model strucure
-  - loss functions
-- dataset
-  - default dataset interface
+## Стек
 
-# Deps
-- ty
-- pytest
-- ruff
+- Python 3.13
+- uv как пакетный менеджер и раннер
+- pytest и pytest-cov для тестов
+- ruff, mypy в строгом режиме, ty для проверки типов
+- numpy и graphviz, обе опциональные: numpy нужен только для одного из числовых бекендов, graphviz только для выгрузки графа
 
-TODO:
-- SGD .parameters error
-- bump version
+## Как запускать
 
-# OPTIMIZATION OF COMP GRAPH
-Your goal is: optimizing graph structure, for faster rendering
-Graph is very detailed, has a lot of useless text, that slows generation dramatically, reduce the overhead. Display only necessary info
+Зависимости берутся из uv.lock, обновлять их не нужно, uv сам поднимет окружение при первом запуске.
 
+Тесты:
 
-# Roadmap
-## Stage 1 - n4 (standalone lib)
-Soft deadline 02.28 -> Hard deadline 03.08
+```
+uv run pytest
+```
 
-- Implement Value
-  + data / grad / requires_grad
-  +/- operator overloading
-  + backward()
-  - backward_step()
+То же самое, но обёрткой:
 
-+ Implement internal OpNode
-  + forward dependencies
-  + saved values
-  + backward function
+```
+./scripts/tests.sh
+```
 
-- Implement execution tape
-  - forward graph build
-  - reverse traversal
-  - gradient accumulation
+Покрытие:
 
-- Graph Introspection API
-  - GraphNode
-  - GraphTrace
-  - trace()
-  - backward_order()
+```
+./scripts/coverage.sh
+```
 
-- Implement Parameter
+Пример с обучением MLP:
 
-- Implement Module
-  - automatic parameter registration
-  - parameters()
-  - zero_grad()
+```
+uv run python example/mlp.py
+```
 
-- Implement nn
-  - Linear
-  - relu
-  - tanh
+Библиотеку можно поставить в свой проект прямо из репозитория, именно так её подтягивает n4-ide:
 
-- Implement loss
-  - mse
+```
+uv add git+https://github.com/kanogame/n4
+```
 
-- Implement optim
-  - SGD
-  - step()
-  - zero_grad()
+## Структура папок
 
-- Tests
-  + numeric gradient check
-  - scalar expression test
-  - simple MLP convergence
+- src/n4/core - сердце библиотеки. Value это скаляр с полями data, grad и parent_op. Op это узел графа с методами forward_pass и backward_pass. CompGraph собирает граф обходом от корневого значения и умеет выгружать его в graphviz
+- src/n4/op - конкретные операции: add, sub, mul, div, pow, exp, log, neg, relu, tanh и nonOp
+- src/n4/tensor - Tensor, плоский список Value плюс форма. Умеет broadcasting, матричное умножение, reshape, sum, mean
+- src/n4/nn - слои (DenseLayer, ConvLayer, SoftmaxLayer, TanhLayer), базовые Model и Sequential
+- src/n4/loss - MSELoss и CrossEntropyLoss
+- src/n4/optim - SGD, Adam и общий Optimizer
+- src/n4/numeric - числовые бекенды PyFloat, NumpyFloat, DecimalNum и протокол NumericProtocol, которому они следуют
+- src/n4/tests - 15 файлов с тестами, от численной проверки градиентов до сходимости маленькой сети
+- docs - гайд по использованию библиотеки и отдельный разбор того, почему обратный проход должен идти в топологическом порядке
+- example - обучение MLP на трёх классах
+- scripts - две короткие обёртки над uv
 
+## Особенности
 
-## Stage 2 - runtime-loader (IDE project)
-Soft deadline 03.15 -> Hard deadline 03.20
-
-- Create project that depends on n4
-
-- Dynamic loading of user-defined model
-  - import model.py at runtime
-  - find Module subclass
-  - instantiate model
-
-- Execute forward pass
-  - create input Values
-  - run model(x)
-  - compute loss
-
-- Extract runtime graph
-  - loss.trace()
-  - backward_order()
-
-
-## Stage 3 - UI shell (Qt6)
-Soft deadline 03.30 -> Hard deadline 04.05
-
-- Create main window
-
-- Layout
-  - left pane: code editor
-  - right pane: graph view
-  - bottom pane: playback controls
-
-- Editor
-  - embed QScintilla widget
-  - python syntax highlighting
-  - file open / save
-
-- Graph View
-  - QGraphicsScene
-  - QGraphicsView
-  - pan / zoom enabled
-
-
-## Stage 4 - graph render
-Soft deadline 04.10 -> Hard deadline 04.15
-
-- Use NetworkX for layout
-  - convert GraphTrace to nx graph
-  - run spring layout
-
-- Render nodes
-  - GraphNode as rect
-  - show op name
-  - show value / grad
-
-- Render edges
-  - forward dependencies
-
-
-## Stage 5 - backward playback
-Soft deadline 04.20 -> Hard deadline 04.25
-
-- Controls
-  - Step
-  - Run
-  - Reset
-
-- On step
-  - call backward_step()
-  - highlight active node
-  - update grad display
-
-- Edge thickness based on grad magnitude
-
-
-## Stage 6 - training loop
-Soft deadline 04.20 -> Hard deadline 04.25
-
-- Run N training steps
-  - forward
-  - backward
-  - optimizer step
-
-- Display loss curve
-  - embed matplotlib canvas
-
-- Reset model state
+- Граф строится динамически прямо во время прямого прохода. Каждая операция создаёт новый Value и записывает себя в его parent_op, дальше backward идёт по этим ссылкам назад
+- Числовой тип это параметр обобщения. Value, Tensor, слои и модели все параметризованы бекендом, и смешивать бекенды нельзя, будет TypeError. Бекенд везде передаётся явно, неявных приведений нет вообще
+- Из этого следует приятная вещь: можно посчитать ту же сеть на float, на numpy-числах или на Decimal, не меняя код модели
+- Типизация строгая, mypy настроен на strict, в пакете лежит py.typed
+- Тензоры ведут себя как неизменяемые, любая арифметика возвращает новый объект, а не правит старый
+- graphviz импортируется лениво, внутри метода export_graphviz, так что без него библиотека работает
+- Докстринги написаны на русском, комментарии тоже
+- Скорости тут ждать не стоит. Каждое число это отдельный объект Python со своей историей операций, на больших сетях граф разрастается очень быстро
